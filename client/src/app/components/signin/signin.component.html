@@ -1,0 +1,45 @@
+<p>
+login works!
+</p>
+
+<div fxLayout="row" *ngIf="!success">
+
+  <mat-card fxFlex="100" >
+    <form [formGroup]="form">
+
+      <mat-form-field>
+        <input matInput placeholder="Email Address" formControlName="email">
+        <!--<mat-error *ngIf="emailFormControl.hasError('email') && !emailFormControl.hasError('required')">
+           -  Please enter a valid email address
+           -</mat-error>-->
+    <!--<mat-error *ngIf="emailFormControl.hasError('required')">
+       -  Email is <strong>required</strong>
+       -</mat-error>-->
+      </mat-form-field><br>
+
+      <mat-form-field>
+        <input matInput placeholder="Password" formControlName="password" type="password">
+        <!--<mat-error *ngIf="emailFormControl.hasError('email') && !emailFormControl.hasError('required')">
+           -  Please enter a valid email address
+           -</mat-error>-->
+    <!--<mat-error *ngIf="emailFormControl.hasError('required')">
+       -  Email is <strong>required</strong>
+       -</mat-error>-->
+      </mat-form-field><br>
+    </form>	
+    <br>
+    <mat-spinner *ngIf="spinnerStatus !== 0" diameter="32" ></mat-spinner>
+    <p *ngIf="status === 1">
+      You've entered wrong email or password.
+    </p>
+    <p *ngIf="status === 2">
+      Success!    
+    </p>
+    <p *ngIf="status === 3 || status === 4 || status === 5">
+      Some error ocurred on server. 
+    </p>
+    <button (click)="onSubmit()" type="submit" mat-raised-button color="primary" >Submit</button>
+  </mat-card>
+</div>
+{{ form.value | json }}<br>
+{{ form.valid | json }}<br>

@@ -6,7 +6,7 @@ import { HttpClientModule } from '@angular/common/http';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { FlexLayoutModule } from '@angular/flex-layout';
 import { AppComponent } from './app.component';
-import { LoginComponent } from './components/login/login.component';
+import { SignInComponent } from './components/signin/signin.component';
 import { AppRoutingModule } from './app-routing.module';
 
 import {
@@ -27,10 +27,12 @@ import {
   MatTabsModule,
   MatCheckboxModule
 } from '@angular/material';
+import { SignUpComponent } from './components/signup/signup.component';
 @NgModule({
   declarations: [
     AppComponent,
-    LoginComponent,
+    SignInComponent,
+    SignUpComponent,
   ],
   imports: [
     BrowserModule,
