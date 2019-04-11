@@ -1,6 +1,4 @@
-import { Document, Schema } from 'mongoose';
-import { IChallan } from '../interfaces/challan';
+import { Document, Schema } from 'mongoose'
+import { IChallan } from '../interfaces/challan'
 
-export interface IChallanModel extends IChallan, Document {
-    
-  }
+export interface IChallanModel extends IChallan, Document {}

@@ -1,6 +1,4 @@
-
-export interface ITraffic{
-    location :  string ,
-    coords:  string
-
+export interface ITraffic {
+  location: string
+  coords: string
 }

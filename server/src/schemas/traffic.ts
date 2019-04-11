@@ -1,7 +1,6 @@
-import { Schema } from 'mongoose';
+import { Schema } from 'mongoose'
 
-export let trafficSchema = new Schema ({
-    location : {type: String},
-    coords: {type: String}
-
+export let trafficSchema = new Schema({
+  location: { type: String },
+  coords: { type: String },
 })

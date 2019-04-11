@@ -1,6 +1,4 @@
-import { Document, Schema } from 'mongoose';
-import { ITraffic } from '../interfaces/traffic';
+import { Document, Schema } from 'mongoose'
+import { ITraffic } from '../interfaces/traffic'
 
-export interface ITrafficModel extends ITraffic, Document {
-    
-  }
+export interface ITrafficModel extends ITraffic, Document {}
