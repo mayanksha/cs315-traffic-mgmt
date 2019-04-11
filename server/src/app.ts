@@ -14,14 +14,35 @@ const env_PORT = Number.parseInt(process.env.SERVER_PORT || "8000");
 
 // Schemas
 import { UserSchema } from './schemas/user';
+import { challanSchema } from './schemas/challan';
+import { citizenSchema } from './schemas/citizen';
+import { policeSchema } from './schemas/police';
+import { trafficSchema } from './schemas/traffic';
+import { vehicleSchema } from './schemas/vehicle';
+import { insuranceSchema } from './schemas/insurance';
+
+
 
 // Models 
 import { IUserModel } from './models/user';
+import { IChallanModel } from './models/challan';
+import { ICitizenModel } from './models/citizen';
+import { IPoliceModel } from './models/police';
+import { ITrafficModel } from './models/traffic';
+import { IVehicleModel } from './models/vehicle';
+import { IInsuranceModel } from './models/insurance';
+
 
 let connection : mongoose.Connection = mongoose.createConnection('mongodb://localhost/local',
   {useNewUrlParser: true});
 
 const UserModel = connection.model<IUserModel>('UserModel', UserSchema);
+const ChallanModel = connection.model<IChallanModel>('ChallanModel', challanSchema);
+const CitizenModel = connection.model<ICitizenModel>('CitizenModel', citizenSchema);
+const PoliceModel = connection.model<IPoliceModel>('PoliceModel', policeSchema);
+const TrafficModel = connection.model<ITrafficModel>('TrafficModel', trafficSchema);
+const VehicleModel = connection.model<IVehicleModel>('VehicleModel', vehicleSchema);
+const InsuranceModel = connection.model<IInsuranceModel>('InsuranceModel', insuranceSchema);
 
 app.use(bodyParser.json());
 app.use(passport.initialize());
