@@ -1,9 +1,13 @@
 export interface IChallan {
   license: string
-  vehicle_no: string
+  vehicleNo: string
   date: Date
-  police_officer: string
+  policeOfficer: string
   offence: string
-  fine: string
-  due: Date
+  fineAmount: number 
+  dueDate: Date
+  coordinates: {
+    latitute: number,
+    longitude: number,
+  }
 }
