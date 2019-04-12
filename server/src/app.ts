@@ -5,6 +5,7 @@ import bodyParser = require('body-parser')
 import assert = require('assert')
 import passport = require('passport')
 import mongoose = require('mongoose')
+import session = require('express-session')
 
 import { PassportConfig } from './config/passport'
 import { NextFunction, Request, Response } from 'express'
@@ -14,12 +15,12 @@ const env_PORT = Number.parseInt(process.env.SERVER_PORT || '8000')
 
 // Schemas
 import { UserSchema } from './schemas/user'
-import { challanSchema } from './schemas/challan'
-import { citizenSchema } from './schemas/citizen'
-import { policeSchema } from './schemas/police'
-import { trafficSchema } from './schemas/traffic'
-import { vehicleSchema } from './schemas/vehicle'
-import { insuranceSchema } from './schemas/insurance'
+import { ChallanSchema } from './schemas/challan'
+import { CitizenSchema } from './schemas/citizen'
+import { PoliceSchema } from './schemas/police'
+import { TrafficSchema } from './schemas/traffic'
+import { VehicleSchema } from './schemas/vehicle'
+import { InsuranceSchema } from './schemas/insurance'
 
 // Models
 import { IUserModel } from './models/user'
@@ -30,40 +31,33 @@ import { ITrafficModel } from './models/traffic'
 import { IVehicleModel } from './models/vehicle'
 import { IInsuranceModel } from './models/insurance'
 
-let connection: mongoose.Connection = mongoose.createConnection(
-  'mongodb://localhost/local',
-  {
-    useNewUrlParser: true,
-  }
-)
+// Controllers
+import { AccountCtrl } from './controllers/accounts'
+
+let connection: mongoose.Connection = mongoose.createConnection('mongodb://localhost/local', {
+  useNewUrlParser: true,
+})
 
 const UserModel = connection.model<IUserModel>('UserModel', UserSchema)
-const ChallanModel = connection.model<IChallanModel>(
-  'ChallanModel',
-  challanSchema
-)
-const CitizenModel = connection.model<ICitizenModel>(
-  'CitizenModel',
-  citizenSchema
-)
-const PoliceModel = connection.model<IPoliceModel>('PoliceModel', policeSchema)
-const TrafficModel = connection.model<ITrafficModel>(
-  'TrafficModel',
-  trafficSchema
-)
-const VehicleModel = connection.model<IVehicleModel>(
-  'VehicleModel',
-  vehicleSchema
-)
-const InsuranceModel = connection.model<IInsuranceModel>(
-  'InsuranceModel',
-  insuranceSchema
-)
+const ChallanModel = connection.model<IChallanModel>('ChallanModel', ChallanSchema)
+const CitizenModel = connection.model<ICitizenModel>('CitizenModel', CitizenSchema)
+const PoliceModel = connection.model<IPoliceModel>('PoliceModel', PoliceSchema)
+const TrafficModel = connection.model<ITrafficModel>('TrafficModel', TrafficSchema)
+const VehicleModel = connection.model<IVehicleModel>('VehicleModel', VehicleSchema)
+const InsuranceModel = connection.model<IInsuranceModel>('InsuranceModel', InsuranceSchema)
+
+const sessionOptions: session.SessionOptions = {
+  secret: 'foobarfoobarfoobar',
+  resave: false,
+  saveUninitialized: false,
+}
 
 app.use(bodyParser.json())
+app.use(session(sessionOptions))
 app.use(passport.initialize())
 app.use(passport.session())
 app.use(cors())
+app.use(httpLogger('dev'))
 
 PassportConfig.setupPassport(passport, UserModel)
 
@@ -73,41 +67,157 @@ app.get('/', (req: Request, res: Response, next: NextFunction) => {
 })
 
 app.post('/signup', (req: Request, res: Response, next: NextFunction) => {
-  passport.authenticate(
-    'local-signup',
-    { session: false },
-    (err: Error, user: IUserModel, info: any) => {
+  passport.authenticate('local-signup', { session: false }, (err: Error, user: IUserModel, info: any) => {
+    if (err) {
+      res.status(401)
+      res.end()
+      return next(err)
+    }
+    // User already exists, so send 409 Conflict
+    if (!user) {
+      res.status(409)
+      res.end()
+      return
+    }
+    req.logIn(user, function(err) {
       if (err) {
-        res.status(401)
-        res.end()
         return next(err)
       }
-      // User already exists, so send 409 Conflict
-      if (!user) {
-        res.status(409)
-        res.end()
-        return
-      }
-      req.logIn(user, function(err) {
-        if (err) {
-          return next(err)
-        }
-        res.status(200)
-        res.end()
-      })
-    }
-  )(req, res, next)
+      res.status(200)
+      res.end()
+    })
+  })(req, res, next)
 })
 
-app.post(
-  '/signin',
-  passport.authenticate('local-signin'),
+app.post('/signin', passport.authenticate('local-signin'), (req: Request, res: Response, next: NextFunction) => {
+  res.status(200)
+  res.end()
+})
+
+let accController: AccountCtrl = new AccountCtrl(UserModel)
+
+app.get(
+  '/foobar',
+  accController.checkLogin,
+  accController.checkAdmin,
   (req: Request, res: Response, next: NextFunction) => {
-    console.log(req.body)
-    res.status(200)
+    res.send(req.user)
     res.end()
   }
 )
+
+function getAllChallanHandler(req: Request, res: Response, next: NextFunction): void {
+  let challanPromise: Promise<IChallanModel[]> = ChallanModel.find({}).exec();
+  challanPromise
+  .then((allChallan) => {
+    res.send(allChallan);
+  })
+  .catch((err) => {
+    throw err;
+  })
+}
+
+function createChallanHandler(req: Request, res: Response, next: NextFunction): void {
+  // Assertions to check whether it isn't a Bad Request
+  assert(typeof req.body.license !== "undefined");
+  assert(typeof req.body.fineAmount !== "undefined");
+  assert(typeof req.body.vehicleNo !== "undefined");
+  assert(typeof req.body.policeOfficer !== "undefined");
+  assert(typeof req.body.dueDate !== "undefined");
+  assert(typeof req.body.coordinates !== "undefined");
+  /*assert(
+   *  typeof req.body.coordinates !== "undefined" &&
+   *  typeof req.body.coordinates.latitude !== "undefined" &&
+   *  typeof req.body.coordinates.longitude !== "undefined"
+   *);*/
+  let storeCitizen: ICitizenModel;
+
+  // The _id field of CitizenSchema correspods to the 
+  // License Number of that person
+  let licensePromise: Promise<ICitizenModel | null> = 
+  CitizenModel.findOne({ _id: req.body.license }).exec();
+
+  licensePromise
+  .then((citizen: ICitizenModel | null ) => {
+    if (!citizen) {
+      res.sendStatus(404);
+      res.end();
+    }
+    else storeCitizen = citizen;
+    return citizen;
+  })
+  // TODO: Atomicity Issue here, we need to fix this by removing the challan schema and adding a
+  // Challan field in the Citizen Schema. MongoDB doesn't support transactions (or if 
+  // it does, then they need database replicas to be working)
+  //
+  // There's no way to rollback (unless you explicity delete which isn't Atomic either) 
+  // once your newChallan.save() has suceeded.
+
+  .then((citizen: ICitizenModel | null ): PromiseLike<IChallanModel> => {
+    if (citizen) {
+      let newChallan = new ChallanModel();
+      newChallan.license = citizen._id;
+      newChallan.fineAmount = req.body.fineAmount;
+      newChallan.vehicleNo = req.body.vehicleNo;
+      newChallan.policeOfficer = req.body.policeOfficer;
+      newChallan.dueDate = req.body.dueDate;
+      newChallan.coordinates.longitude = req.body.coordinates.latitude;
+      newChallan.coordinates.longitude = req.body.coordinates.longitude;
+      return newChallan.save();
+    }
+    else return Promise.reject(new Error("Citizen Not Found in DB!"));
+  })
+  .then((newChallan: IChallanModel) => {
+    console.log(newChallan);
+    storeCitizen.offences.Unpaid.push(newChallan._id);
+    return storeCitizen.save();
+  })
+  .then((citizen: ICitizenModel) => {
+    console.log(citizen);
+    res.sendStatus(200);
+  })
+  .catch((err) => {
+    throw err;
+  })
+}
+
+// TODO: Fill this function
+function createCitizenHandler(req: Request, res: Response, next: NextFunction): void {
+
+}
+app.get('/allChallan', 
+  accController.checkLogin,
+  accController.checkRTO,
+  getAllChallanHandler
+)
+app.post('/createChallan', 
+  accController.checkLogin,
+  accController.checkPolice,
+  createChallanHandler 
+)
+app.post('/createCitizenLicense',
+  accController.checkLogin,
+  accController.checkRTO,
+  createCitizenHandler
+)
+
+// Route to Sign any user out. If the user is not logged in, 
+// it automatically returns 401 Unauthorized
+
+app.get('/signout', accController.checkLogin, accController.SignOut);
+app.use('/*', (err, req: Request, res: Response, next: NextFunction) => {
+	// Assertions errors are wrong user inputs
+  console.error(err);
+	if(err.code === 'ERR_ASSERTION'){
+		// Bad HTTP Request
+		res.sendStatus(400);
+	}
+	else {
+		// Internal Server Error 
+		res.status(500);
+		res.end('500 - INTERNAL SERVER ERROR!');
+	}
+});
 
 app.listen(env_PORT, err => {
   if (err) {

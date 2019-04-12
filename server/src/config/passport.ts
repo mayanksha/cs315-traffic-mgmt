@@ -3,6 +3,7 @@ import { PassportStatic } from 'passport'
 import { Strategy, IStrategyOptions, VerifyFunction } from 'passport-local'
 import { IUserModel } from '../models/user'
 import localStrategy = require('passport-local')
+import { AuthLevels } from '../controllers/accounts'
 
 export class PassportConfig {
   static setupPassport(passport: PassportStatic, model: Model<IUserModel>): void {
@@ -41,6 +42,7 @@ export class PassportConfig {
             let newUser = new model()
             newUser.email = email
             newUser.password = newUser.genHashSync(password)
+            newUser.authLevel = AuthLevels.USER_RTO
             newUser.save(err => done(err, newUser))
             return done(err, newUser)
           }
