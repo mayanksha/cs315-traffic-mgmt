@@ -1,6 +1,6 @@
 import { Schema } from 'mongoose'
 
-export let vehicleSchema = new Schema({
+export let VehicleSchema = new Schema({
   vehicle_no: { type: String },
   vehicle_type: { type: String },
   vehicle_color: { type: String },

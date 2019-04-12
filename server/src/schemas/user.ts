@@ -1,16 +1,11 @@
 import mongoose = require('mongoose')
 import bcrypt = require('bcrypt')
+
+import { AuthLevels } from '../controllers/accounts'
 const Schema = mongoose.Schema
 
-export enum AUTH_LEVELS {
-  ADMIN = 0,
-  USER_RTO = 1 << 0,
-  USER_POLICE = 1 << 1,
-  USER_CITIZEN = 1 << 2,
-}
-
 export let UserSchema = new Schema({
-  userId: String,
+  citizenId: String,
   email: String,
   password: String,
   dateOfRegister: {

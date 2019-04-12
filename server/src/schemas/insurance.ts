@@ -1,6 +1,6 @@
 import { Schema } from 'mongoose'
 
-export let insuranceSchema = new Schema({
+export let InsuranceSchema = new Schema({
   name: { type: String },
   license: { type: String },
   vehicle_no: { type: String },

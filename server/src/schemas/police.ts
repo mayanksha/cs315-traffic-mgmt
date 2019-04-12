@@ -1,6 +1,6 @@
 import { Schema } from 'mongoose'
 
-export let policeSchema = new Schema({
+export let PoliceSchema = new Schema({
   id: { type: Number },
   name: { type: String },
   designation: { type: String },

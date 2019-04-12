@@ -1,11 +1,15 @@
 import { Schema } from 'mongoose'
 
-export let challanSchema = new Schema({
+export let ChallanSchema = new Schema({
   license: { type: String },
-  vehicle_no: { type: String },
-  date: { type: Date },
-  police_officer: { type: String },
+  vehicleNo: { type: String },
+  date: { type: Date, default: Date.now() },
+  policeOfficer: { type: String },
   offence: { type: String },
-  fine: { type: String },
-  due: { type: Date },
+  fineAmount: { type: Number },
+  dueDate: { type: Date },
+  coordinates: {
+    latitute: { type: Number },
+    longitude: { type: Number },
+  },
 })
