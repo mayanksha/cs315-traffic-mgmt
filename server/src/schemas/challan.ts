@@ -12,4 +12,10 @@ export let ChallanSchema = new Schema({
     latitute: { type: Number },
     longitude: { type: Number },
   },
+  paymentStatus: {type: Boolean},
+  receiptDetails: {
+    paymentDate: {type: Date},
+    paymentAmount: {type: Number},
+    receiptID: {type: String}
+  }
 })

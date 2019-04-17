@@ -136,7 +136,7 @@ function createChallanHandler(req: Request, res: Response, next: NextFunction): 
   // License Number of that person
   let licensePromise: Promise<ICitizenModel | null> = 
   CitizenModel.findOne({ _id: req.body.license }).exec();
-
+    
   licensePromise
   .then((citizen: ICitizenModel | null ) => {
     if (!citizen) {
@@ -167,13 +167,13 @@ function createChallanHandler(req: Request, res: Response, next: NextFunction): 
     }
     else return Promise.reject(new Error("Citizen Not Found in DB!"));
   })
+  // .then((newChallan: IChallanModel) => {
+  //   console.log(newChallan);
+  //   storeCitizen.offences.Unpaid.push(newChallan._id);
+  //   return storeCitizen.save();
+  // })
   .then((newChallan: IChallanModel) => {
     console.log(newChallan);
-    storeCitizen.offences.Unpaid.push(newChallan._id);
-    return storeCitizen.save();
-  })
-  .then((citizen: ICitizenModel) => {
-    console.log(citizen);
     res.sendStatus(200);
   })
   .catch((err) => {
@@ -183,8 +183,49 @@ function createChallanHandler(req: Request, res: Response, next: NextFunction): 
 
 // TODO: Fill this function
 function createCitizenHandler(req: Request, res: Response, next: NextFunction): void {
+  // Assertions to check whether it isn't a Bad Request
+  assert(typeof req.body.name !== "undefined");
+  assert(typeof req.body.personal.address !== "undefined");
+  assert(typeof req.body.personal.phoneNumber !== "undefined");
+  assert(typeof req.body.personal.email !== "undefined");
+  assert(typeof req.body.personal.license !== "undefined");
+  assert(typeof req.body.registeredVehicleNos !== "undefined");
+  assert(typeof req.body.licenseDetails.LType !== "undefined");
 
+  let citizenExistPromise: Promise<ICitizenModel | null> = 
+  CitizenModel.findOne({ email: req.body.license }).exec();
+  citizenExistPromise
+  .then((citizen: ICitizenModel | null ) => {
+    if (citizen) {
+      res.sendStatus(409);
+      res.end();
+    }
+    return citizen;
+  })
+  .then( (citizen: ICitizenModel | null ): PromiseLike<ICitizenModel> => {
+    if(!citizen) {
+      let newCitizen = new CitizenModel();
+      newCitizen.name = req.body.name;
+      newCitizen.personal.address = req.body.personal.address;
+      newCitizen.personal.phoneNumber = req.body.personal.phoneNumber;
+      newCitizen.personal.email = req.body.personal.email;
+      //newCitizen.personal.license = req.body.personal.license;
+      newCitizen.registeredVehicleNos = req.body.registeredVehicleNos;
+      newCitizen.licenseDetails.LType = req.body.licenseDetails.LType;
+      return newCitizen.save();
+    }
+    else return Promise.reject(new Error("Citizen Already Exists In DB!")); 
+  })
+  .then((newCitizen: ICitizenModel) => {
+    console.log(newCitizen);
+    res.sendStatus(200);
+  })
+  .catch((err) => {
+    throw err;
+  })
 }
+app.get('/getChallanById');
+app.get('/getChallanByUser');
 app.get('/allChallan', 
   accController.checkLogin,
   accController.checkRTO,
@@ -192,7 +233,7 @@ app.get('/allChallan',
 )
 app.post('/createChallan', 
   accController.checkLogin,
-  accController.checkPolice,
+  accController.checkRTO,
   createChallanHandler 
 )
 app.post('/createCitizenLicense',
@@ -201,6 +242,30 @@ app.post('/createCitizenLicense',
   createCitizenHandler
 )
 
+function updateAuthLevelHandler(req: Request, res: Response, next: NextFunction) { 
+  assert(typeof req.body.email !== "undefined");
+  assert(typeof req.body.authLevel !== "undefined");
+  
+  UserModel.findOne({ email: req.body.email }).exec()
+    .then((user: IUserModel | null) => {
+      if (user) {
+        user.updateOne({ email: req.body.email }, { authLevel: req.body.authLevel });
+        return user.save();
+      }
+      else {
+        return Promise.reject(new Error(`User ${req.body.email} doesn't exists!`));
+      }
+    })
+    .then((ret) => {
+      console.log(ret);
+      res.sendStatus(200);
+    })
+    .catch(err => { throw err });
+};
+
+app.post('/updateAuthLevel',
+  updateAuthLevelHandler
+);
 // Route to Sign any user out. If the user is not logged in, 
 // it automatically returns 401 Unauthorized
 

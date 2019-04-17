@@ -24,12 +24,12 @@ export let CitizenSchema = new Schema({
     address: { type: String },
     phoneNumber: { type: String },
     email: { type: String },
-    license: { type: String },
+    //license: { type: String },
   },
-  offences: {
-    Paid: { type: Array },
-    Unpaid: { type: Array },
-  },
+  // offences: {
+  //   Paid: { type: Array },
+  //   Unpaid: { type: Array },
+  // },
   registeredVehicleNos: { type: Array },
   licenseDetails: {
     creationDate: { type: Date, default: Date.now() },

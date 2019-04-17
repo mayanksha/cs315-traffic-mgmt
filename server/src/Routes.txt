@@ -4,7 +4,7 @@ Vehicle REgistr - POST - RTO
 ReportCitizenOffences - POST - All
 
 
-ChallanCreation - (POST) - Traffic Police  (Takes location of offender (Police?))
+#ChallanCreation - (POST) - Traffic Police  (Takes location of offender (Police?))
 
 View User Challan (by User) - GET - User only 
 View User Challan (by given ID) - GET - By Police and RTO
@@ -26,7 +26,7 @@ GetPoliceDetails - by RTO Only
 
 UpdatePoliceLocation - by RTO Only
 
-VerifyLincenseNumber - Check whether the license if valid or not -- RTO or Police
+#VerifyLincenseNumber - Check whether the license if valid or not -- RTO or Police
 
 ** ADD - Payment receipts schema and models
 ** DELETE - InsuranceSchema 

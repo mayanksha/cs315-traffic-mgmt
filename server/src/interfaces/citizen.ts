@@ -3,13 +3,9 @@ export interface ICitizen {
   name: { type: string }
   personal: {
     address: string
-    phNum: string
+    phoneNumber: string
     email: string
     license: string
-  }
-  offences: {
-    Paid: string[]
-    Unpaid: string[]
   }
   registeredVehicleNos: string[]
   licenseDetails: {

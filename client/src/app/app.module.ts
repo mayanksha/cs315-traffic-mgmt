@@ -11,6 +11,8 @@ import { AppRoutingModule } from './app-routing.module';
 
 import {
   MatIconModule,
+  MatDatepickerModule,
+  MatNativeDateModule,
   MatToolbarModule,
   MatButtonModule,
   MatAutocompleteModule,
@@ -28,11 +30,15 @@ import {
   MatCheckboxModule
 } from '@angular/material';
 import { SignUpComponent } from './components/signup/signup.component';
+import { CreateChallanComponent } from './components/create-challan/create-challan.component';
+import { CreateCitizenComponent } from './components/create-citizen/create-citizen.component';
 @NgModule({
   declarations: [
     AppComponent,
     SignInComponent,
     SignUpComponent,
+    CreateChallanComponent,
+    CreateCitizenComponent,
   ],
   imports: [
     BrowserModule,
@@ -42,6 +48,8 @@ import { SignUpComponent } from './components/signup/signup.component';
     HttpClientModule,
     FlexLayoutModule,
     MatIconModule,
+    MatDatepickerModule,
+    MatNativeDateModule,
     MatToolbarModule,
     MatButtonModule,
     MatAutocompleteModule,
