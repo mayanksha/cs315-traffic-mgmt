@@ -20,7 +20,7 @@ import { CitizenSchema } from './schemas/citizen'
 import { PoliceSchema } from './schemas/police'
 import { TrafficSchema } from './schemas/traffic'
 import { VehicleSchema } from './schemas/vehicle'
-import { InsuranceSchema } from './schemas/insurance'
+/*import { InsuranceSchema } from './schemas/insurance'*/
 
 // Models
 import { IUserModel } from './models/user'
@@ -29,7 +29,7 @@ import { ICitizenModel } from './models/citizen'
 import { IPoliceModel } from './models/police'
 import { ITrafficModel } from './models/traffic'
 import { IVehicleModel } from './models/vehicle'
-import { IInsuranceModel } from './models/insurance'
+/*import { IInsuranceModel } from './models/insurance'*/
 
 // Controllers
 import { AccountCtrl } from './controllers/accounts'
@@ -44,7 +44,7 @@ const CitizenModel = connection.model<ICitizenModel>('CitizenModel', CitizenSche
 const PoliceModel = connection.model<IPoliceModel>('PoliceModel', PoliceSchema)
 const TrafficModel = connection.model<ITrafficModel>('TrafficModel', TrafficSchema)
 const VehicleModel = connection.model<IVehicleModel>('VehicleModel', VehicleSchema)
-const InsuranceModel = connection.model<IInsuranceModel>('InsuranceModel', InsuranceSchema)
+/*const InsuranceModel = connection.model<IInsuranceModel>('InsuranceModel', InsuranceSchema)*/
 
 const sessionOptions: session.SessionOptions = {
   secret: 'foobarfoobarfoobar',
@@ -113,7 +113,8 @@ function getAllChallanHandler(req: Request, res: Response, next: NextFunction): 
     res.send(allChallan);
   })
   .catch((err) => {
-    throw err;
+    res.sendStatus(500);
+    console.error(err);
   })
 }
 
@@ -134,17 +135,25 @@ function createChallanHandler(req: Request, res: Response, next: NextFunction): 
 
   // The _id field of CitizenSchema correspods to the 
   // License Number of that person
+  if (!mongoose.Types.ObjectId.isValid(req.body.license)) {
+    res.sendStatus(400);
+    return;
+  }
   let licensePromise: Promise<ICitizenModel | null> = 
   CitizenModel.findOne({ _id: req.body.license }).exec();
-    
+
   licensePromise
-  .then((citizen: ICitizenModel | null ) => {
+  .then((citizen: ICitizenModel | null ): ICitizenModel | PromiseLike<any> => {
+    console.log(citizen);
     if (!citizen) {
       res.sendStatus(404);
       res.end();
+      return Promise.reject(new Error(`Citizen ${citizen} doesn't exists in DB!`));
     }
-    else storeCitizen = citizen;
-    return citizen;
+    else {
+      storeCitizen = citizen;
+      return citizen;
+    };
   })
   // TODO: Atomicity Issue here, we need to fix this by removing the challan schema and adding a
   // Challan field in the Citizen Schema. MongoDB doesn't support transactions (or if 
@@ -177,11 +186,11 @@ function createChallanHandler(req: Request, res: Response, next: NextFunction): 
     res.sendStatus(200);
   })
   .catch((err) => {
-    throw err;
+    res.sendStatus(500);
+    console.error(err);
   })
 }
 
-// TODO: Fill this function
 function createCitizenHandler(req: Request, res: Response, next: NextFunction): void {
   // Assertions to check whether it isn't a Bad Request
   assert(typeof req.body.name !== "undefined");
@@ -221,9 +230,78 @@ function createCitizenHandler(req: Request, res: Response, next: NextFunction): 
     res.sendStatus(200);
   })
   .catch((err) => {
-    throw err;
+    res.sendStatus(500);
+    console.error(err);
   })
 }
+function updateAuthLevelHandler(req: Request, res: Response, next: NextFunction) { 
+  assert(typeof req.body.email !== "undefined");
+  assert(typeof req.body.authLevel !== "undefined");
+
+  UserModel.findOne({ email: req.body.email }).exec()
+    .then((user: IUserModel | null) => {
+      if (user) {
+        user.updateOne({ email: req.body.email }, { authLevel: req.body.authLevel });
+        return user.save();
+      }
+      else {
+        return Promise.reject(new Error(`User ${req.body.email} doesn't exists!`));
+      }
+    })
+    .then((ret) => {
+      console.log(ret);
+      res.sendStatus(200);
+    })
+    .catch(err => { 
+    res.sendStatus(500);
+      console.error(err) 
+    });
+};
+function registerVehicleHandler(req: Request, res: Response, next: NextFunction) {
+  assert(typeof req.body.vehicleNo !== "undefined");
+  assert(typeof req.body.vehicleType !== "undefined");
+  assert(typeof req.body.vehicleColor !== "undefined");
+  assert(typeof req.body.VINNo !== "undefined");
+  assert(typeof req.body.licenseNo !== "undefined");
+  assert(typeof req.body.registeredTo !== "undefined");
+  // TODO: Handle Insurance too
+
+  // TODO: CHeck whether such a license exists or not?
+  let registerPromise: Promise<IVehicleModel | null> = VehicleModel.findOne({ VINNo: req.body.VINNo }).exec();
+  registerPromise 
+    .then((vehicle: IVehicleModel | null): PromiseLike<IVehicleModel> => {
+      if (vehicle) {
+        res.sendStatus(409);
+        return Promise.reject("Vehicle Found in Database");
+      }
+      else {
+        const newVehicle = new VehicleModel();
+        newVehicle.vehicleNo = req.body.vehicleNo;
+        newVehicle.vehicleType = req.body.vehicleType;
+        newVehicle.vehicleColor = req.body.vehicleColor;
+        newVehicle.VINNo = req.body.VINNo;
+        newVehicle.registeredTo = req.body.registeredTo;
+        newVehicle.PAN_No = (req.body.PAN_No === "undefined")? null: req.body.PAN_No;
+
+        // TODO: Check error here
+        if (typeof req.body.insurance != "undefined") {
+          newVehicle.insurance.expiresAt = req.body.insurance.expiresAt;
+          newVehicle.insurance.insuredFrom = req.body.insurance.insuredFrom;
+          newVehicle.insurance.policyNo = req.body.insurance.policyNo;
+          newVehicle.insurance.policyScheme = req.body.insurance.policyScheme;
+        }
+        return newVehicle.save();
+      }
+    })
+    .then((vehicle: IVehicleModel) => {
+      res.status(200).send(vehicle);
+    })
+    .catch((err) => {
+    res.sendStatus(500);
+      console.error(err);
+    })
+}
+
 app.get('/getChallanById');
 app.get('/getChallanByUser');
 app.get('/allChallan', 
@@ -241,28 +319,11 @@ app.post('/createCitizenLicense',
   accController.checkRTO,
   createCitizenHandler
 )
-
-function updateAuthLevelHandler(req: Request, res: Response, next: NextFunction) { 
-  assert(typeof req.body.email !== "undefined");
-  assert(typeof req.body.authLevel !== "undefined");
-  
-  UserModel.findOne({ email: req.body.email }).exec()
-    .then((user: IUserModel | null) => {
-      if (user) {
-        user.updateOne({ email: req.body.email }, { authLevel: req.body.authLevel });
-        return user.save();
-      }
-      else {
-        return Promise.reject(new Error(`User ${req.body.email} doesn't exists!`));
-      }
-    })
-    .then((ret) => {
-      console.log(ret);
-      res.sendStatus(200);
-    })
-    .catch(err => { throw err });
-};
-
+app.post('/registerVehicle',
+  accController.checkLogin,
+  accController.checkRTO,
+  registerVehicleHandler
+)
 app.post('/updateAuthLevel',
   updateAuthLevelHandler
 );
@@ -271,22 +332,22 @@ app.post('/updateAuthLevel',
 
 app.get('/signout', accController.checkLogin, accController.SignOut);
 app.use('/*', (err, req: Request, res: Response, next: NextFunction) => {
-	// Assertions errors are wrong user inputs
+  // Assertions errors are wrong user inputs
   console.error(err);
-	if(err.code === 'ERR_ASSERTION'){
-		// Bad HTTP Request
-		res.sendStatus(400);
-	}
-	else {
-		// Internal Server Error 
-		res.status(500);
-		res.end('500 - INTERNAL SERVER ERROR!');
-	}
+  if(err.code === 'ERR_ASSERTION'){
+    // Bad HTTP Request
+    res.sendStatus(400);
+  }
+  else {
+    // Internal Server Error 
+    res.status(500);
+    res.end('500 - INTERNAL SERVER ERROR!');
+  }
 });
 
 app.listen(env_PORT, err => {
   if (err) {
-    throw err
+    console.error(err)
   }
   console.log('Server listening on ' + env_PORT)
 })

@@ -3,7 +3,6 @@ Traffice Police creation (POST) -- RTO
 Vehicle REgistr - POST - RTO
 ReportCitizenOffences - POST - All
 
-
 #ChallanCreation - (POST) - Traffic Police  (Takes location of offender (Police?))
 
 View User Challan (by User) - GET - User only 
