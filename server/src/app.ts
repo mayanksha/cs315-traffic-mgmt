@@ -66,34 +66,6 @@ app.get('/', (req: Request, res: Response, next: NextFunction) => {
   res.end()
 })
 
-app.post('/signup', (req: Request, res: Response, next: NextFunction) => {
-  passport.authenticate('local-signup', { session: false }, (err: Error, user: IUserModel, info: any) => {
-    if (err) {
-      res.status(401)
-      res.end()
-      return next(err)
-    }
-    // User already exists, so send 409 Conflict
-    if (!user) {
-      res.status(409)
-      res.end()
-      return
-    }
-    req.logIn(user, function(err) {
-      if (err) {
-        return next(err)
-      }
-      res.status(200)
-      res.end()
-    })
-  })(req, res, next)
-})
-
-app.post('/signin', passport.authenticate('local-signin'), (req: Request, res: Response, next: NextFunction) => {
-  res.status(200)
-  res.end()
-})
-
 let accController: AccountCtrl = new AccountCtrl(UserModel)
 
 app.get(
@@ -146,9 +118,10 @@ function createChallanHandler(req: Request, res: Response, next: NextFunction): 
   .then((citizen: ICitizenModel | null ): ICitizenModel | PromiseLike<any> => {
     console.log(citizen);
     if (!citizen) {
-      res.sendStatus(404);
-      res.end();
-      return Promise.reject(new Error(`Citizen ${citizen} doesn't exists in DB!`));
+      let err = new Error();
+      err.message = `Citizen ${citizen} doesn't exists in DB!`;
+      err.name = "E_NOT_EXISTS";
+      return Promise.reject(err);
     }
     else {
       storeCitizen = citizen;
@@ -186,7 +159,10 @@ function createChallanHandler(req: Request, res: Response, next: NextFunction): 
     res.sendStatus(200);
   })
   .catch((err) => {
-    res.sendStatus(500);
+    if ( err.name === "E_NOT_EXISTS" )
+      res.sendStatus(404);
+    else
+      res.sendStatus(500);
     console.error(err);
   })
 }
@@ -204,12 +180,14 @@ function createCitizenHandler(req: Request, res: Response, next: NextFunction): 
   let citizenExistPromise: Promise<ICitizenModel | null> = 
   CitizenModel.findOne({ email: req.body.license }).exec();
   citizenExistPromise
-  .then((citizen: ICitizenModel | null ) => {
+  .then((citizen: ICitizenModel | null ): any | Promise<ICitizenModel>  => {
     if (citizen) {
-      res.sendStatus(409);
-      res.end();
+      let err = new Error();
+      err.message = `Citizen ${citizen} already exists!`;
+      err.name = "E_EXISTS";
+      return Promise.reject(err);
     }
-    return citizen;
+    else return citizen;
   })
   .then( (citizen: ICitizenModel | null ): PromiseLike<ICitizenModel> => {
     if(!citizen) {
@@ -230,7 +208,10 @@ function createCitizenHandler(req: Request, res: Response, next: NextFunction): 
     res.sendStatus(200);
   })
   .catch((err) => {
-    res.sendStatus(500);
+    if ( err.name === "E_EXISTS" )
+      res.sendStatus(409);
+    else
+      res.sendStatus(500);
     console.error(err);
   })
 }
@@ -253,7 +234,7 @@ function updateAuthLevelHandler(req: Request, res: Response, next: NextFunction)
       res.sendStatus(200);
     })
     .catch(err => { 
-    res.sendStatus(500);
+      res.sendStatus(500);
       console.error(err) 
     });
 };
@@ -271,8 +252,11 @@ function registerVehicleHandler(req: Request, res: Response, next: NextFunction)
   registerPromise 
     .then((vehicle: IVehicleModel | null): PromiseLike<IVehicleModel> => {
       if (vehicle) {
-        res.sendStatus(409);
-        return Promise.reject("Vehicle Found in Database");
+        res.status(409);
+        let err = new Error();
+        err.message = "Vehicle Found in Database";
+        err.name = "E_EXISTS";
+        return Promise.reject(err);
       }
       else {
         const newVehicle = new VehicleModel();
@@ -296,8 +280,11 @@ function registerVehicleHandler(req: Request, res: Response, next: NextFunction)
     .then((vehicle: IVehicleModel) => {
       res.status(200).send(vehicle);
     })
-    .catch((err) => {
-    res.sendStatus(500);
+    .catch((err: Error) => {
+      if ( err.name === "E_EXISTS" )
+        res.sendStatus(409);
+      else
+        res.sendStatus(500);
       console.error(err);
     })
 }
@@ -329,6 +316,34 @@ app.post('/updateAuthLevel',
 );
 // Route to Sign any user out. If the user is not logged in, 
 // it automatically returns 401 Unauthorized
+
+app.post('/signup', (req: Request, res: Response, next: NextFunction) => {
+  passport.authenticate('local-signup', { session: false }, (err: Error, user: IUserModel, info: any) => {
+    if (err) {
+      res.status(401)
+      res.end()
+      return next(err)
+    }
+    // User already exists, so send 409 Conflict
+    if (!user) {
+      res.status(409)
+      res.end()
+      return
+    }
+    req.logIn(user, function(err) {
+      if (err) {
+        return next(err)
+      }
+      res.status(200)
+      res.end()
+    })
+  })(req, res, next)
+})
+
+app.post('/signin', passport.authenticate('local-signin'), (req: Request, res: Response, next: NextFunction) => {
+  res.status(200)
+  res.end()
+})
 
 app.get('/signout', accController.checkLogin, accController.SignOut);
 app.use('/*', (err, req: Request, res: Response, next: NextFunction) => {
