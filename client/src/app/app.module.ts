@@ -32,6 +32,7 @@ import {
 import { SignUpComponent } from './components/signup/signup.component';
 import { CreateChallanComponent } from './components/create-challan/create-challan.component';
 import { CreateCitizenComponent } from './components/create-citizen/create-citizen.component';
+import { MapsComponent } from './components/maps/maps.component';
 @NgModule({
   declarations: [
     AppComponent,
@@ -39,6 +40,7 @@ import { CreateCitizenComponent } from './components/create-citizen/create-citiz
     SignUpComponent,
     CreateChallanComponent,
     CreateCitizenComponent,
+    MapsComponent,
   ],
   imports: [
     BrowserModule,
