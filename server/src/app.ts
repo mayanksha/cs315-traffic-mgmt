@@ -173,18 +173,20 @@ function createCitizenHandler(req: Request, res: Response, next: NextFunction): 
   assert(typeof req.body.personal.address !== "undefined");
   assert(typeof req.body.personal.phoneNumber !== "undefined");
   assert(typeof req.body.personal.email !== "undefined");
-  assert(typeof req.body.personal.license !== "undefined");
+  //assert(typeof req.body.personal.license !== "undefined");
   assert(typeof req.body.registeredVehicleNos !== "undefined");
   assert(typeof req.body.licenseDetails.LType !== "undefined");
 
   let citizenExistPromise: Promise<ICitizenModel | null> = 
-  CitizenModel.findOne({ email: req.body.license }).exec();
+  CitizenModel.findOne({"personal.email": req.body.personal.email}).exec();
   citizenExistPromise
   .then((citizen: ICitizenModel | null ): any | Promise<ICitizenModel>  => {
+    console.log(citizen);
     if (citizen) {
       let err = new Error();
       err.message = `Citizen ${citizen} already exists!`;
       err.name = "E_EXISTS";
+      console.error(err);
       return Promise.reject(err);
     }
     else return citizen;
@@ -208,11 +210,11 @@ function createCitizenHandler(req: Request, res: Response, next: NextFunction): 
     res.sendStatus(200);
   })
   .catch((err) => {
+    console.error(err);
     if ( err.name === "E_EXISTS" )
       res.sendStatus(409);
     else
       res.sendStatus(500);
-    console.error(err);
   })
 }
 function updateAuthLevelHandler(req: Request, res: Response, next: NextFunction) { 
@@ -289,6 +291,86 @@ function registerVehicleHandler(req: Request, res: Response, next: NextFunction)
     })
 }
 
+function verifyLicenseHandler(req: Request, res: Response, next: NextFunction): void {
+  assert(typeof req.body.license !== "undefined");
+  if (!mongoose.Types.ObjectId.isValid(req.body.license)) {
+    res.sendStatus(400);
+    return;
+  }
+  let licensePromise: Promise<ICitizenModel | null> = 
+  CitizenModel.findOne({ _id: req.body.license }).exec();
+
+  licensePromise
+  .then((citizen: ICitizenModel | null ) => {
+    if (citizen) { //citizen exits
+      console.log("Citizen exits in DB");
+      res.sendStatus(200);
+      res.end();
+    }
+    else { //citizen doesn't exist
+    console.log("Citizen doesn't exit in DB");
+    res.sendStatus(404);
+    res.end();
+    };
+  })
+}
+
+function createTrafficPoliceHandler(req: Request, res: Response, next: NextFunction): void {
+  // Assertions to check whether it isn't a Bad Request
+  assert(typeof req.body.name !== "undefined");
+  assert(typeof req.body.email !== "undefined");
+  assert(typeof req.body.designation !== "undefined");
+  assert(typeof req.body.location !== "undefined");
+  if (!mongoose.Types.ObjectId.isValid(req.body.email)) {
+    res.sendStatus(400);
+    return;
+  }
+  let policeExistPromise: Promise<IPoliceModel | null> = 
+  PoliceModel.findOne({"email": req.body.email}).exec();
+  policeExistPromise
+  .then((police: IPoliceModel | null ): any | Promise<IPoliceModel>  => {
+    console.log(police);
+    if (police) {
+      let err = new Error();
+      err.message = `Police ${police} already exists!`;
+      err.name = "E_EXISTS";
+      console.error(err);
+      return Promise.reject(err);
+    }
+    else return police;
+  })
+  .then( (police: IPoliceModel | null ): PromiseLike<IPoliceModel> => {
+    if(!police) {
+      let newPolice = new PoliceModel();
+      newPolice.name = req.body.name;
+      newPolice.email = req.body.email;
+      newPolice.designation = req.body.designation;
+      newPolice.location = req.body.location;
+      //newPolice.personal.license = req.body.personal.license;
+      return newPolice.save();
+    }
+    else return Promise.reject(new Error("Police Already Exists In DB!")); 
+  })
+  .then((newPolice: IPoliceModel) => {
+    console.log(newPolice);
+    res.sendStatus(200);
+  })
+  .catch((err) => {
+    console.error(err);
+    if ( err.name === "E_EXISTS" )
+      res.sendStatus(409);
+    else
+      res.sendStatus(500);
+  })
+}
+
+function getUserInfoByUserHandler(req: Request, res: Response, next: NextFunction): void {}
+
+function getUserInfoHandler(req: Request, res: Response, next: NextFunction): void {
+
+
+}
+
 app.get('/getChallanById');
 app.get('/getChallanByUser');
 app.get('/allChallan', 
@@ -296,14 +378,19 @@ app.get('/allChallan',
   accController.checkRTO,
   getAllChallanHandler
 )
+app.get('/verifyLicenseNumber', 
+  accController.checkLogin,
+  accController.checkRTO,
+  verifyLicenseHandler
+)
 app.post('/createChallan', 
   accController.checkLogin,
   accController.checkRTO,
   createChallanHandler 
 )
 app.post('/createCitizenLicense',
-  accController.checkLogin,
-  accController.checkRTO,
+  // accController.checkLogin,
+  // accController.checkRTO,
   createCitizenHandler
 )
 app.post('/registerVehicle',
@@ -311,8 +398,25 @@ app.post('/registerVehicle',
   accController.checkRTO,
   registerVehicleHandler
 )
+
+app.post('/createTrafficPolice',
+  accController.checkLogin,
+  accController.checkRTO,
+  createTrafficPoliceHandler
+)
 app.post('/updateAuthLevel',
   updateAuthLevelHandler
+);
+
+app.get('/getUserInfoByUser',
+  accController.checkLogin,
+  getUserInfoByUserHandler
+);
+
+app.get('/getUserInfo',
+  accController.checkLogin,
+  accController.checkRTO,
+  getUserInfoHandler
 );
 // Route to Sign any user out. If the user is not logged in, 
 // it automatically returns 401 Unauthorized

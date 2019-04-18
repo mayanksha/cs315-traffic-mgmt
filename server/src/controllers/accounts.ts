@@ -71,7 +71,9 @@ export class AccountCtrl {
     }
   }
   public checkLogin = (req: Request, res: Response, next: NextFunction) => {
-    if (req.isAuthenticated()) next()
+    if (req.isAuthenticated()) {
+      console.log(req.user);
+      next()}
     else res.sendStatus(401)
   }
 

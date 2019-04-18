@@ -1,12 +1,12 @@
-Personal User  (POST) -- access control RTO
-Traffice Police creation (POST) -- RTO
-Vehicle REgistr - POST - RTO
+#Personal User  (POST) -- access control RTO
+#Traffice Police creation (POST) -- RTO
+#Vehicle REgistr - POST - RTO
 ReportCitizenOffences - POST - All
 
 #ChallanCreation - (POST) - Traffic Police  (Takes location of offender (Police?))
-
-View User Challan (by User) - GET - User only 
-View User Challan (by given ID) - GET - By Police and RTO
+#Ciztizen Creation
+#View User Challan (by User) - GET - User only 
+#View User Challan (by given ID) - GET - By Police and RTO
 
 Get Info (by license Number) - Police or RTO
 Get Info (by User) - Logged in User
@@ -25,7 +25,7 @@ GetPoliceDetails - by RTO Only
 
 UpdatePoliceLocation - by RTO Only
 
-#VerifyLincenseNumber - Check whether the license if valid or not -- RTO or Police
+#VerifyLicenseNumber - Check whether the license if valid or not -- RTO or Police
 
 ** ADD - Payment receipts schema and models
 ** DELETE - InsuranceSchema 
@@ -33,3 +33,12 @@ UpdatePoliceLocation - by RTO Only
 CITIZEN - 
 
 POLICE -  
+
+Change email to Aadharrrr!
+Change Police Location to Lat Long
+
+
+ACCIDENTS BY EVERYONE => ACCIDENT SCHEMA LOCATION, REPORTER ID ROUTES REPORT ACCIDENT, GET ALL ACCIDENTS
+CHALLAAN TYPES
+#TOWING A TYPE OF CHALLAAN
+CITZIEN POLICE

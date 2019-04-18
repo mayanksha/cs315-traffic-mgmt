@@ -1,8 +1,8 @@
 import { Schema } from 'mongoose'
 
 export let PoliceSchema = new Schema({
-  id: { type: Number },
   name: { type: String },
+  email: {type: String},
   designation: { type: String },
   location: { type: String },
 })
