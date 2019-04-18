@@ -1,0 +1,48 @@
+<p>
+create-challan works!
+</p>
+
+<mat-card>
+
+  <form [formGroup]="form">
+
+    <!--assert(typeof req.body.license !== "undefined");
+      -assert(typeof req.body.fineAmount !== "undefined");
+      -assert(typeof req.body.vehicleNo !== "undefined");
+      -assert(typeof req.body.policeOfficer !== "undefined");
+      -assert(typeof req.body.dueDate !== "undefined");
+      -assert(typeof req.body.coordinates !== "undefined");-->
+
+      <mat-form-field>
+        <input matInput placeholder="License ID/Number" formControlName="license">
+      </mat-form-field><br>
+      <mat-form-field>
+        <input matInput placeholder="Fine Amount (in Rs.)" formControlName="fineAmount">
+      </mat-form-field><br>
+      <mat-form-field>
+        <input matInput placeholder="Vehicle No." formControlName="vehicleNo">
+      </mat-form-field><br>
+      <mat-form-field>
+        <input matInput placeholder="Police Officer's ID" formControlName="policeOfficer">
+      </mat-form-field><br>
+
+      <mat-form-field>
+        <input matInput [matDatepicker]="picker" placeholder="Choose a date" formControlName="dueDate">
+        <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+        <mat-datepicker #picker></mat-datepicker>
+      </mat-form-field><br>
+      <!--<mat-form-field>
+        -  <input matInput placeholder="Due Date (for payment)" formControlName="dueDate">
+        -</mat-form-field><br>-->
+
+      <mat-form-field>
+        <input matInput placeholder="Latitude" formControlName="latitude" [(value)]="coord.long">
+      </mat-form-field><br>
+
+      <mat-form-field>
+        <input matInput placeholder="Longitude" formControlName="longitude" [(value)]="coord.lat">
+      </mat-form-field><br>
+
+  </form>	
+  <pre> {{ form.value | json }}</pre>
+</mat-card>

@@ -4,12 +4,14 @@ import { SignInComponent } from './components/signin/signin.component';
 import { SignUpComponent } from './components/signup/signup.component';
 import { CreateChallanComponent } from './components/create-challan/create-challan.component';
 import { CreateCitizenComponent } from './components/create-citizen/create-citizen.component';
+import { MapsComponent } from './components/maps/maps.component';
 
 const routes: Routes = [
   { path: 'signin', component: SignInComponent },
   { path: 'signup', component: SignUpComponent },
   { path: 'createChallan', component: CreateChallanComponent },
   { path: 'createCitizen', component: CreateCitizenComponent },
+  { path: 'maps', component: MapsComponent },
 ];
 
 @NgModule({
