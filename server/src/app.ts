@@ -18,7 +18,7 @@ import { UserSchema } from './schemas/user'
 import { ChallanSchema } from './schemas/challan'
 import { CitizenSchema } from './schemas/citizen'
 import { PoliceSchema } from './schemas/police'
-import { TrafficSchema } from './schemas/traffic'
+import { TrafficSchema } from './schemas/traffic_signal'
 import { VehicleSchema } from './schemas/vehicle'
 import { AccidentSchema } from './schemas/accident'
 /*import { InsuranceSchema } from './schemas/insurance'*/
@@ -28,7 +28,7 @@ import { IUserModel } from './models/user'
 import { IChallanModel } from './models/challan'
 import { ICitizenModel } from './models/citizen'
 import { IPoliceModel } from './models/police'
-import { ITrafficModel } from './models/traffic'
+import { ITrafficModel } from './models/traffic_signal'
 import { IVehicleModel } from './models/vehicle'
 import { IAccidentModel } from './models/accident'
 /*import { IInsuranceModel } from './models/insurance'*/
@@ -36,6 +36,7 @@ import { IAccidentModel } from './models/accident'
 // Controllers
 import { AccountCtrl } from './controllers/accounts'
 
+mongoose.Promise = Promise;
 let connection: mongoose.Connection = mongoose.createConnection('mongodb://localhost/local', {
   useNewUrlParser: true,
 })
@@ -590,7 +591,8 @@ app.get('/verifyLicenseNumber',
   accController.checkLogin,
   accController.checkRTO,
   verifyLicenseHandler
-)
+);
+
 app.post('/createChallan', 
   accController.checkLogin,
   accController.checkRTO,
@@ -715,16 +717,69 @@ app.post('/signup', (req: Request, res: Response, next: NextFunction) => {
   })(req, res, next)
 })
 
-app.post('/signin', passport.authenticate('local-signin'), (req: Request, res: Response, next: NextFunction) => {
-  res.status(200)
-  res.end()
+app.post('/signin', passport.authenticate('local-signin'), 
+  (req: Request, res: Response, next: NextFunction) => {
+    assert (typeof (req as any).locals !== "undefined");
+    res.cookie('authLevel', (req as any).locals.authLevel);
+    console.log(res.cookie);
+    res.sendStatus(200)
 })
 
 app.get('/signout', accController.checkLogin, accController.SignOut);
+
+function updateTrafficLightsHandler(req: Request, res: Response, next: NextFunction) { 
+  assert(typeof req.body.trafficLights !== "undefined");
+  assert(Array.isArray(req.body.trafficLights));
+
+  let allPromises: Promise<ITrafficModel | null>[] = req.body.trafficLights.map((e: any) => {
+    let newLight: ITrafficModel  = new TrafficModel();
+    newLight.icon = e.icon;
+    newLight.coords = e.coords;
+    newLight.name = e.name;
+    newLight.address = e.address;
+    return newLight.save();
+  })
+
+  Promise.all(allPromises)
+    .then((ans) => {
+      console.log(ans); 
+      res.sendStatus(200);
+    })
+    .catch((err) => {
+      res.sendStatus(500);
+      console.error(err);
+    })
+}
+// TODO: CheckLogin and Add AUTH Level RTO
+app.post('/updateTrafficLights',
+        updateTrafficLightsHandler);
+
+function getTrafficLightsHandler(req: Request, res: Response, next: NextFunction) {
+  TrafficModel.find({}).exec()
+    .then((results: ITrafficModel[]) => {
+      res.status(200).send(results);
+    })
+    .catch((err) => {
+      res.sendStatus(500);
+      console.error(err);
+    })
+}
+app.get('/getTrafficLights',
+        getTrafficLightsHandler);
+
+// TODO: 
+function registerPoliceOfficerHandler(req: Request, res: Response, next: NextFunction) {
+    
+}
+app.post('/registerPoliceOfficer',
+  /*accController.checkLogin,
+   *accController.checkRTO,*/
+  registerPoliceOfficerHandler 
+)
 app.use('/*', (err, req: Request, res: Response, next: NextFunction) => {
   // Assertions errors are wrong user inputs
   console.error(err);
-  if(err.code === 'ERR_ASSERTION'){
+  if(err.code === 'ERR_ASSERTION') {
     // Bad HTTP Request
     res.sendStatus(400);
   }

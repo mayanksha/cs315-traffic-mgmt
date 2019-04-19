@@ -3,10 +3,10 @@ import { IUserModel } from '../models/user'
 import { NextFunction, Request, Response } from 'express'
 
 export enum AuthLevels {
-  USER_ADMIN = 1 << 0,
   USER_RTO = 1 << 1,
   USER_POLICE = 1 << 2,
   USER_CITIZEN = 1 << 3,
+  USER_ADMIN = ((1 << 1) | (1 << 2) | (1 << 3)),
 }
 
 /*
@@ -34,7 +34,8 @@ export class AccountCtrl {
   }
 
   public checkRTO(req: Request, res: Response, next: NextFunction): void {
-    if ((req.user.authLevel & AuthLevels.USER_RTO) | (req.user.authLevel & AuthLevels.USER_ADMIN)) {
+    if (req.user.authLevel & (AuthLevels.USER_RTO | AuthLevels.USER_ADMIN)) {
+      res.cookie('authLevel', AuthLevels.USER_RTO)
       next()
     } else {
       console.log('[DEBUG] checkRTO called by -')
@@ -72,7 +73,7 @@ export class AccountCtrl {
   }
   public checkLogin = (req: Request, res: Response, next: NextFunction) => {
     if (req.isAuthenticated()) {
-      console.log(req.user);
+      console.log(req.cookies);
       next()}
     else res.sendStatus(401)
   }
