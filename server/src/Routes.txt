@@ -5,40 +5,41 @@ ReportCitizenOffences - POST - All
 
 #ChallanCreation - (POST) - Traffic Police  (Takes location of offender (Police?))
 #Ciztizen Creation
-#View User Challan (by User) - GET - User only 
-#View User Challan (by given ID) - GET - By Police and RTO
+View User Challan (by User) - GET - User only 
+View User Challan (by given ID) - GET - By Police and RTO
 
-Get Info (by license Number) - Police or RTO
-Get Info (by User) - Logged in User
+#Get Info (by license Number) - Police or RTO
+#Get Info (by User) - Logged in User
 
 PayOffences - UPDATE - just by the user logged in
 
-GetAllOfffences (by User) - GET - User only 
-GetAllOfffences (by given ID) - GET - By Police and RTO
+        GetAllOfffences (by User) - GET - User only 
+        GetAllOfffences (by given ID) - GET - By Police and RTO
 
 GetReceipt (ID of challan) - (by logged in user, or police or RTO)
 GetAllReceipts - by RTO only
+!!!!Can everyone access any challaan
+#GetVehicleDetails - (by vehicle ID ) by User logged in, RTO and Police
+GetVehicleDetailsByUser
+#GetPoliceDetails - by RTO Only
 
-GetVehicleDetails - (by vehicle ID ) by User logged in, RTO and Police
-
-GetPoliceDetails - by RTO Only
-
-UpdatePoliceLocation - by RTO Only
+#UpdatePoliceLocation - by RTO Only !!!!!!!!!!!!POSTMAN NOT DINISHING CHANGE
 
 #VerifyLicenseNumber - Check whether the license if valid or not -- RTO or Police
 
+
+
+
+Get User Info from Vehicle Information
 ** ADD - Payment receipts schema and models
 ** DELETE - InsuranceSchema 
 
 CITIZEN - 
 
 POLICE -  
-
-Change email to Aadharrrr!
+Check Get User Info
 Change Police Location to Lat Long
-
+Vehicle Number in ACcients
 
 ACCIDENTS BY EVERYONE => ACCIDENT SCHEMA LOCATION, REPORTER ID ROUTES REPORT ACCIDENT, GET ALL ACCIDENTS
-CHALLAAN TYPES
-#TOWING A TYPE OF CHALLAAN
-CITZIEN POLICE
+CHALLAAN TYPES, TOWING A TYPE OF CHALLAAN
