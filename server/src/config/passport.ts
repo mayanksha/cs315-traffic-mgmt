@@ -16,9 +16,10 @@ export class PassportConfig {
 
     const checkSignIn: localStrategy.VerifyFunctionWithRequest = 
     (req: Request, email: string, password: string, done) => {
-      console.log(req.body);
       process.nextTick(() => {
         model.findOne({ email: email }, function(err, user: IUserModel) {
+          console.log(req.body);
+          console.log(user);
           if (err) {
             return done(err)
           }
@@ -34,7 +35,7 @@ export class PassportConfig {
           (req as any).locals = {};
           (req as any).locals.authLevel = user.authLevel;
 
-          if (typeof req.body.authRequested === "number" && (user.authLevel === req.body.authRequested))
+          if (typeof req.body.authRequested === "number" && (user.authLevel !== req.body.authRequested))
             return done(null, false);
           return done(null, user)
         })
@@ -62,7 +63,6 @@ export class PassportConfig {
       })
     }
     passport.serializeUser<IUserModel, string>(function(user: IUserModel, done) {
-      console.log(user)
       done(null, user._id)
     })
 

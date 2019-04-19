@@ -1,7 +1,7 @@
 export interface IAccident {
   reporterEmail: string,
   coordinates: {
-    latitute: number,
+    latitude: number,
     longitude: number,
   },
   date: Date,

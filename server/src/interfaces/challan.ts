@@ -8,7 +8,8 @@ export interface IChallan {
   fineAmount: number 
   dueDate: Date
   coordinates: {
-    latitute: number,
+    latitude: number,
     longitude: number,
-  }
+  },
+  paymentStatus: boolean,
 }

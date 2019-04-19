@@ -51,25 +51,21 @@ const VehicleModel = connection.model<IVehicleModel>('VehicleModel', VehicleSche
 const AccidentModel = connection.model<IAccidentModel>('AccidentModel', AccidentSchema)
 /*const InsuranceModel = connection.model<IInsuranceModel>('InsuranceModel', InsuranceSchema)*/
 
-
-app.use(bodyParser.json())
-app.use(cookieParser())
-
 const sessionOptions: session.SessionOptions = {
   secret: 'foobarfoobarfoobar',
   resave: false,
   saveUninitialized: false,
 }
-app.use(session(sessionOptions))
 
+app.use(bodyParser.json())
+app.use(session(sessionOptions))
+app.use(cookieParser())
 app.use(passport.initialize())
 app.use(passport.session())
-
-const corsOptions: cors.CorsOptions = {
-  origin: 'http://localhost:4200',
+app.use(cors({
+  /*origin: 'http://localhost:4200',*/
   credentials: true
-}
-app.use(cors(corsOptions))
+}))
 app.use(httpLogger('dev'))
 
 PassportConfig.setupPassport(passport, UserModel)
@@ -103,90 +99,6 @@ function getAllChallanHandler(req: Request, res: Response, next: NextFunction): 
   })
 }
 
-function getChallanByUserHandler(req: Request, res: Response, next: NextFunction): void {
-  console.log(req.user);
-  ChallanModel.find({"email": req.user.email})
-  .then((challanList: IChallanModel[]) => {
-    console.log(challanList);
-    res.send(challanList);
-  })
-  .catch((err) => {
-    res.sendStatus(404);
-    console.error(err);
-  })
-}
-
-//give a license numberr and get back all assosciated challans
-function getChallanByIdHandler(req: Request, res: Response, next: NextFunction): void {
-  //assert(typeof req.body.email !== "undefined");
-  assert(typeof req.body.license !== "undefined");
-  //console.log(req.user);
-  if (!mongoose.Types.ObjectId.isValid(req.body.license)) {
-    res.sendStatus(400);
-    return;
-  }
-  let licensePromise: Promise<ICitizenModel | null> = 
-  CitizenModel.findOne({ _id: req.body.license }).exec();
-  licensePromise
-  .then((citizen: ICitizenModel | null ): ICitizenModel | Promise<ICitizenModel> => {
-    console.log('FOOBAR');
-    console.log(citizen);
-    if (!citizen) {
-      let err = new Error();
-      err.message = `Citizen ${citizen} doesn't exists in DB!`;
-      err.name = "E_NOT_EXISTS";
-      return Promise.reject(err);
-    }
-    else {
-      return citizen;
-    };
-  })
-  .then((citizen: ICitizenModel): PromiseLike<IChallanModel[]> => {
-    return ChallanModel.find({license: req.body.license}).exec();
-  })
-  .then((challanList: IChallanModel[]) => {
-    console.log(challanList);
-    res.send(challanList);
-  })
-  .catch((err) => {
-    if ( err.name === "E_NOT_EXISTS" )
-      res.sendStatus(404);
-    else
-      res.sendStatus(500);
-    console.error(err);
-  })
-  
-}
-
-
-function payChallanHandler(req: Request, res: Response, next: NextFunction): void {
-  assert(typeof req.body.challanId !== "undefined");
-  let ChallanExistPromise: Promise<IChallanModel | null>  = 
-  ChallanModel.findOneAndUpdate({_id: req.body.challanId}, {paymentStatus : true}).exec();
-  ChallanExistPromise
-  .then((challan: IChallanModel | null): any | Promise<IChallanModel> => {
-    console.log(challan);
-    if(!challan) {
-      let err = new Error();
-      err.message = `Challan doesn't exists in DB!`;
-      err.name = "E_NOT_EXISTS";
-      return Promise.reject(err);
-    }
-    else return challan;
-
-  })
-  .then((challan: IChallanModel) => {
-    console.log(challan);
-    res.sendStatus(200);
-  })
-  .catch((err) => {
-    if ( err.name === "E_NOT_EXISTS" )
-      res.sendStatus(404);
-    else
-      res.sendStatus(500);
-  })
-}
-
 function createChallanHandler(req: Request, res: Response, next: NextFunction): void {
   // Assertions to check whether it isn't a Bad Request
   assert(typeof req.body.license !== "undefined");
@@ -195,7 +107,6 @@ function createChallanHandler(req: Request, res: Response, next: NextFunction): 
   assert(typeof req.body.policeOfficer !== "undefined");
   assert(typeof req.body.dueDate !== "undefined");
   assert(typeof req.body.coordinates !== "undefined");
-  assert(typeof req.body.offence !== "undefined");
   /*assert(
    *  typeof req.body.coordinates !== "undefined" &&
    *  typeof req.body.coordinates.latitude !== "undefined" &&
@@ -203,7 +114,7 @@ function createChallanHandler(req: Request, res: Response, next: NextFunction): 
    *);*/
   let storeCitizen: ICitizenModel;
 
-  // The _id field of CitizenSchema corresponds to the 
+  // The _id field of CitizenSchema correspods to the 
   // License Number of that person
   if (!mongoose.Types.ObjectId.isValid(req.body.license)) {
     res.sendStatus(400);
@@ -226,7 +137,7 @@ function createChallanHandler(req: Request, res: Response, next: NextFunction): 
       return citizen;
     };
   })
-  // DONE: Atomicity Issue here, we need to fix this by removing the challan schema and adding a
+  // TODO: Atomicity Issue here, we need to fix this by removing the challan schema and adding a
   // Challan field in the Citizen Schema. MongoDB doesn't support transactions (or if 
   // it does, then they need database replicas to be working)
   //
@@ -236,15 +147,12 @@ function createChallanHandler(req: Request, res: Response, next: NextFunction): 
   .then((citizen: ICitizenModel | null ): PromiseLike<IChallanModel> => {
     if (citizen) {
       let newChallan = new ChallanModel();
-      newChallan.license = req.body.license;
-      newChallan.email = citizen.personal.email;
+      newChallan.license = citizen._id;
       newChallan.fineAmount = req.body.fineAmount;
       newChallan.vehicleNo = req.body.vehicleNo;
       newChallan.policeOfficer = req.body.policeOfficer;
       newChallan.dueDate = req.body.dueDate;
-      newChallan.offence = req.body.offence;
-      newChallan.paymentStatus = false;
-      newChallan.coordinates.latitude = req.body.coordinates.latitude;
+      newChallan.coordinates.longitude = req.body.coordinates.latitude;
       newChallan.coordinates.longitude = req.body.coordinates.longitude;
       return newChallan.save();
     }
@@ -274,8 +182,8 @@ function createCitizenHandler(req: Request, res: Response, next: NextFunction): 
   assert(typeof req.body.personal.address !== "undefined");
   assert(typeof req.body.personal.phoneNumber !== "undefined");
   assert(typeof req.body.personal.email !== "undefined");
+  //assert(typeof req.body.personal.license !== "undefined");
   assert(typeof req.body.registeredVehicleNos !== "undefined");
-  assert(typeof req.body.licenseDetails !== "undefined");
   assert(typeof req.body.licenseDetails.LType !== "undefined");
 
   let citizenExistPromise: Promise<ICitizenModel | null> = 
@@ -287,6 +195,7 @@ function createCitizenHandler(req: Request, res: Response, next: NextFunction): 
       let err = new Error();
       err.message = `Citizen ${citizen} already exists!`;
       err.name = "E_EXISTS";
+      console.error(err);
       return Promise.reject(err);
     }
     else return citizen;
@@ -298,11 +207,9 @@ function createCitizenHandler(req: Request, res: Response, next: NextFunction): 
       newCitizen.personal.address = req.body.personal.address;
       newCitizen.personal.phoneNumber = req.body.personal.phoneNumber;
       newCitizen.personal.email = req.body.personal.email;
+      //newCitizen.personal.license = req.body.personal.license;
       newCitizen.registeredVehicleNos = req.body.registeredVehicleNos;
       newCitizen.licenseDetails.LType = req.body.licenseDetails.LType;
-      newCitizen.licenseDetails.expirationDate = req.body.licenseDetails.expirationDate;
-      newCitizen.licenseDetails.creationDate = req.body.licenseDetails.creationDate;
-      newCitizen.licenseDetails.learnersLicense = req.body.licenseDetails.learnersLicense;
       return newCitizen.save();
     }
     else return Promise.reject(new Error("Citizen Already Exists In DB!")); 
@@ -319,14 +226,13 @@ function createCitizenHandler(req: Request, res: Response, next: NextFunction): 
       res.sendStatus(500);
   })
 }
-
 function updateAuthLevelHandler(req: Request, res: Response, next: NextFunction) { 
   assert(typeof req.body.email !== "undefined");
   assert(typeof req.body.authLevel !== "undefined");
 
-  UserModel.findOneAndUpdate({ email: req.body.email }, { authLevel: req.body.authLevel }).exec()
-    .then((ret) => {
-      console.log(ret);
+  UserModel.findOneAndUpdate({ email: req.body.email },{ authLevel: req.body.authLevel }).exec()
+    .then((user: IUserModel | null) => {
+      console.log(user);
       res.sendStatus(200);
     })
     .catch(err => { 
@@ -334,7 +240,6 @@ function updateAuthLevelHandler(req: Request, res: Response, next: NextFunction)
       console.error(err) 
     });
 };
-
 function registerVehicleHandler(req: Request, res: Response, next: NextFunction) {
   assert(typeof req.body.vehicleNo !== "undefined");
   assert(typeof req.body.vehicleType !== "undefined");
@@ -416,6 +321,10 @@ function createTrafficPoliceHandler(req: Request, res: Response, next: NextFunct
   assert(typeof req.body.email !== "undefined");
   assert(typeof req.body.designation !== "undefined");
   assert(typeof req.body.location !== "undefined");
+  if (!mongoose.Types.ObjectId.isValid(req.body.email)) {
+    res.sendStatus(400);
+    return;
+  }
   let policeExistPromise: Promise<IPoliceModel | null> = 
   PoliceModel.findOne({"email": req.body.email}).exec();
   policeExistPromise
@@ -470,7 +379,6 @@ function getUserInfoByUserHandler(req: Request, res: Response, next: NextFunctio
   })
 }
 
-//Given a license number, get corresponding information
 function getUserInfoHandler(req: Request, res: Response, next: NextFunction): void {
   assert(typeof req.body.license !== "undefined");
   //console.log(req.user);
@@ -508,7 +416,6 @@ function getUserInfoHandler(req: Request, res: Response, next: NextFunction): vo
 
 }
 
-//Given police id and new location, update to new location
 function updatePoliceLocationHandler(req: Request, res: Response, next: NextFunction): void {
   assert(typeof req.body.policeId !== "undefined");
   assert(typeof req.body.location !== "undefined");
@@ -516,11 +423,12 @@ function updatePoliceLocationHandler(req: Request, res: Response, next: NextFunc
     res.sendStatus(400);
     return;
   }
-  //console.log("BAHAR");
+  console.log("BAHAR");
   let policeExistPromise: Promise<IPoliceModel | null> = 
   PoliceModel.findOneAndUpdate({_id: req.body.policeId}, {location : req.body.location}).exec();
   policeExistPromise
   .then((police: IPoliceModel | null ): any | Promise<IPoliceModel>  => {
+    console.log(police);
     if (!police) {
       let err = new Error();
       err.message = `Police ${police} doesn't exists in DB!`;
@@ -532,8 +440,6 @@ function updatePoliceLocationHandler(req: Request, res: Response, next: NextFunc
     };
   })
   .then( (police: IPoliceModel) => {
-    console.log(police);
-    res.sendStatus(200);
     
   })
   .catch((err) => {
@@ -545,7 +451,6 @@ function updatePoliceLocationHandler(req: Request, res: Response, next: NextFunc
   })
 }
 
-//GIVEN POLICE ID, GET DETAILS OF POLICE
 function getPoliceDetailsHandler(req: Request, res: Response, next: NextFunction): void {
   assert(typeof req.body.policeId !== "undefined");
   if (!mongoose.Types.ObjectId.isValid(req.body.policeId)) {
@@ -569,7 +474,7 @@ function getPoliceDetailsHandler(req: Request, res: Response, next: NextFunction
   })
   .then((police: IPoliceModel) => {
     console.log(police);
-    res.send(police);
+    res.sendStatus(200);
     //else return Promise.reject(new Error("Citizen Not Found in DB!"));
   })
   .catch((err) => {
@@ -632,6 +537,18 @@ function getVehicleInfoHandler(req: Request, res: Response, next: NextFunction) 
   assert(typeof req.body.VINNo !== "undefined");
   // TODO: Handle Insurance too
   // TODO: CHeck whether such a license exists or not?
+
+  let vehicleExistPromise: Promise<IVehicleModel | null> = 
+  VehicleModel.findOne({"personal.email": req.user.email}).exec();
+  vehicleExistPromise
+  .then((vehicle: IVehicleModel | null) => {
+    console.log(vehicle);
+    res.send(vehicle);
+  })
+  .catch((err) => {
+    res.sendStatus(404);
+    console.error(err);
+  })
   let registerPromise: Promise<IVehicleModel | null> = VehicleModel.findOne({ VINNo: req.body.VINNo }).exec();
   registerPromise 
     .then((vehicle: IVehicleModel | null): IVehicleModel | Promise<IVehicleModel> => {
@@ -658,177 +575,118 @@ function getVehicleInfoHandler(req: Request, res: Response, next: NextFunction) 
     })
 }
 
-function reportAccidentHandler(req: Request, res: Response, next: NextFunction): void {
-  assert(typeof req.body.coordinates !== "undefined");
-  // if (!mongoose.Types.ObjectId.isValid(req.body.reporterLicense)) {
-  //   res.sendStatus(400);
-  //   return;
-  // }
 
-  let newAccident = new AccidentModel();
-  newAccident.reporterEmail = req.user.email;
-  newAccident.date = req.body.date;
-  newAccident.coordinates = req.body.coordinates;
-  newAccident.description = req.body.description;
-  newAccident.save()
-  .then((accident: IAccidentModel | null ): any  => {
-    console.log(accident);
-    res.sendStatus(200);
-  })
-  .catch((err) => {
-    console.error(err);
-    res.sendStatus(500);
-  })
-}
-
-function getAccidentsHandler(req: Request, res: Response, next: NextFunction): void {
-  assert(typeof req.body.startDate !== "undefined");
-  assert(typeof req.body.endDate !== "undefined");
-  let AccidentPromise: Promise<IAccidentModel[]> = AccidentModel.find({date: {$gte: req.body.startDate, $lte:req.body.endDate}}).sort({ date: 1 }).exec();
-  AccidentPromise
-  .then((allAccidents) => {
-    res.send(allAccidents);
-  })
-  .catch((err) => {
-    res.sendStatus(500);
-    console.error(err);
-  })
-
-}
-
-function getTrafficLightsHandler(req: Request, res: Response, next: NextFunction) {
-  TrafficModel.find({}).exec()
-    .then((results: ITrafficModel[]) => {
-      res.status(200).send(results);
-    })
-    .catch((err) => {
-      res.sendStatus(500);
-      console.error(err);
-    })
-}
-
-//CHALLAN ROUTES
-
-app.post('/createChallan',  //WORKS
-  accController.checkLogin,
-  accController.checkRTO,
-  createChallanHandler 
-)
-
-app.get('/challanByUser', 
-  accController.checkLogin,
-  getChallanByUserHandler
-)
-
-app.post('/challanById', 
-  accController.checkLogin,
-  accController.checkRTO,
-  getChallanByIdHandler
-)
-
+app.get('/getChallanById');
+app.get('/getChallanByUser');
 app.get('/allChallan', 
   accController.checkLogin,
   accController.checkRTO,
   getAllChallanHandler
 )
-
-app.post('/payChallan',
-  accController.checkLogin,
-  payChallanHandler
-)
-
-//CITIZEN ROUTES
-app.post('/createCitizenLicense', //WORKS
-  accController.checkLogin,
-  accController.checkRTO,
-  createCitizenHandler
-)
-
-app.post('/verifyLicenseNumber', //WORKS
+app.get('/verifyLicenseNumber', 
   accController.checkLogin,
   accController.checkRTO,
   verifyLicenseHandler
 );
 
-app.get('/getUserInfoByUser', //TO DO TEST
-  accController.checkLogin,
-  getUserInfoByUserHandler
-);
-
-app.post('/getUserInfo', //WORKS
-  accController.checkLogin,
-  accController.checkPoliceOrRTO,
-  getUserInfoHandler
-);
-
-//POLICE ROUTES
-app.post('/createTrafficPolice', //WORKS
+app.post('/createChallan', 
   accController.checkLogin,
   accController.checkRTO,
-  createTrafficPoliceHandler
+  createChallanHandler 
 )
-
-app.get('/getPoliceDetails', //WORKS
+app.post('/createCitizenLicense',
   accController.checkLogin,
   accController.checkRTO,
-  getPoliceDetailsHandler
+  createCitizenHandler
 )
-
-app.post('/updatePoliceLocation', //WORKS
-  accController.checkLogin,
-  accController.checkRTO,
-  updatePoliceLocationHandler
-)
-
-//VEHICLE ROUTES
-app.post('/registerVehicle', //WORKS
+app.post('/registerVehicle',
   accController.checkLogin,
   accController.checkRTO,
   registerVehicleHandler
 )
 
-app.get('/getVehicleInfoByUser', //TO DO AND TO DO CHECK
+app.post('/createTrafficPolice',
+  accController.checkLogin,
+  accController.checkRTO,
+  createTrafficPoliceHandler
+)
+
+app.get('/getPoliceDetails',
+  accController.checkLogin,
+  accController.checkRTO,
+  getPoliceDetailsHandler
+)
+
+
+app.post('/updateAuthLevel',
+  updateAuthLevelHandler
+);
+
+app.get('/getUserInfoByUser', //TO CHECK
+  accController.checkLogin,
+  getUserInfoByUserHandler
+);
+
+app.get('/getUserInfo',
+  accController.checkLogin,
+  accController.checkRTO,
+  getUserInfoHandler
+);
+
+app.get('/getVehicleInfoByUser',
   accController.checkLogin,
   getVehicleInfoByUserHandler
 );
 
-app.get('/getVehicleInfo', //WORKS
+app.get('/getVehicleInfo',
   accController.checkLogin,
   accController.checkRTO,
   getVehicleInfoHandler
 );
 
-//ACCIDENT ROUTES
-app.post('/reportAccident', //WORKS
-  accController.checkLogin,
-  reportAccidentHandler
-)
-
-app.get('/getAccidents', //WORKS
+app.post('/updatePoliceLocation', 
   accController.checkLogin,
   accController.checkRTO,
-  getAccidentsHandler
+  updatePoliceLocationHandler
 )
 
-// app.get('/getUserReportedAccidents',
-//   accController.checkLogin,
-//   accController.checkRTO,
-//   getUserReportedAccidentsHandler
-// )
-
-//TRAFFIC LIGHTS HANDLER
-app.post('/updateTrafficLights',
-        updateTrafficLightsHandler);
-
-
-app.get('/getTrafficLights',
-        getTrafficLightsHandler);
-
-//AUTHENTICATION ROUTES
-app.post('/updateAuthLevel',
-  updateAuthLevelHandler
-);
-
+/*app.get('/viewChallaanByUser', 
+ *  accController.checkLogin,
+ *  viewChallaanByUserHandler
+ *)
+ *
+ *app.get('/viewChallaan', 
+ *  accController.checkLogin,
+ *  accController.checkRTO,
+ *  viewChallaanHandler
+ *)
+ *
+ *app.get('/viewReceiptById', 
+ *  accController.checkLogin,
+ *  viewReceiptByIdHandler
+ *)
+ *
+ *app.get('/viewAllReceipts', 
+ *  accController.checkLogin,
+ *  accController.checkRTO,
+ *  viewAllReceiptsHandler
+ *)
+ *
+ *app.post('payOffence',
+ *  accController.checkLogin,
+ *  payOffenceHandler
+ *)
+ *
+ *app.post('reportAcciddent',
+ *  accController.checkLogin,
+ *  reportAcciddentHandler
+ *)
+ *
+ *app.get('getAccidents',
+ *  accController.checkLogin,
+ *  accController.checkRTO,
+ *  getAccidentsHandler
+ *)*/
 // Route to Sign any user out. If the user is not logged in, 
 // it automatically returns 401 Unauthorized
 
@@ -855,20 +713,22 @@ app.post('/signup', (req: Request, res: Response, next: NextFunction) => {
   })(req, res, next)
 })
 
-app.post('/signin', passport.authenticate('local-signin'), 
+app.post('/signin',
+  passport.authenticate('local-signin'),
   (req: Request, res: Response, next: NextFunction) => {
     assert (typeof (req as any).locals !== "undefined");
     res.cookie('authLevel', (req as any).locals.authLevel);
-    res.send(req.user)
+    console.log(req.cookies);
+    res.status(200).send(req.user);
 })
 
-app.get('/signout', accController.checkLogin, accController.SignOut);
+app.post('/signout', accController.checkLogin, accController.SignOut);
 
-app.get('/checkLogin', accController.checkLogin,
-  (req: Request, res: Response, next: NextFunction) => {
-    res.status(200).end();
-  });
-
+app.post('/checkLogin', accController.checkLogin);
+/*app.post('/checkLogin', (req, res, next) => {
+ *  console.log(req.cookies);
+ *  res.send(req.cookies);
+ *});*/
 function updateTrafficLightsHandler(req: Request, res: Response, next: NextFunction) { 
   assert(typeof req.body.trafficLights !== "undefined");
   assert(Array.isArray(req.body.trafficLights));
@@ -892,8 +752,34 @@ function updateTrafficLightsHandler(req: Request, res: Response, next: NextFunct
       console.error(err);
     })
 }
-
 // TODO: CheckLogin and Add AUTH Level RTO
+app.post('/updateTrafficLights',
+        updateTrafficLightsHandler);
+
+function getTrafficLightsHandler(req: Request, res: Response, next: NextFunction) {
+  TrafficModel.find({}).exec()
+    .then((results: ITrafficModel[]) => {
+      res.status(200).send(results);
+    })
+    .catch((err) => {
+      res.sendStatus(500);
+      console.error(err);
+    })
+}
+app.get('/getTrafficLights',
+        getTrafficLightsHandler);
+
+// TODO: 
+function registerPoliceOfficerHandler(req: Request, res: Response, next: NextFunction) {
+    
+}
+app.post('/registerPoliceOfficer',
+  /*accController.checkLogin,
+   *accController.checkRTO,*/
+  registerPoliceOfficerHandler 
+)
+
+
 app.use('/*', (err, req: Request, res: Response, next: NextFunction) => {
   // Assertions errors are wrong user inputs
   console.error(err);
@@ -914,3 +800,4 @@ app.listen(env_PORT, err => {
   }
   console.log('Server listening on ' + env_PORT)
 })
+

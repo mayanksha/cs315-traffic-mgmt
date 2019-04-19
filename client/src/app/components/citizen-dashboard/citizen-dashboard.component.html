@@ -1,4 +1,34 @@
 <app-topbar></app-topbar>
-<p>
-  citizen-dashboard works!
-</p>
+
+<div fxLayout="row" fxLayoutAlign="space-around center" >
+  <button mat-raised-button (click)="getLicense()" color="primary">Get License Details</button>
+  <button mat-raised-button (click)="openDialog()" color="primary">Report an Accident</button>
+  <button mat-raised-button (click)="viewMap()" color="primary">View Traffic Lights</button>
+  <button mat-raised-button (click)="getChallan()" color="primary">Get Your Challans</button>
+</div>
+<br>
+<mat-card id="license" *ngIf="license">
+  <h3>License Details</h3>
+  <div >
+    <p><strong>License Number:</strong>  {{license._id}}</p>
+    <p><strong>License Type:</strong>  {{license.licenseDetails.LType}}</p>
+    <p><strong>Expiration Date:</strong>  {{license.licenseDetails.expirationDate}}</p>
+    <p><strong>Name:</strong>  {{license.name}}</p>
+    <p><strong>Address:</strong>  {{license.personal.address}}</p>
+    <p><strong>Phone No.:</strong>  {{license.personal.phoneNumber}}</p>
+  </div>
+</mat-card>
+<br>
+<mat-card id="challans" *ngIf="challans">
+  <h3>All Your Challans</h3>
+  <mat-card *ngFor="let c of challans; let i = index">
+    <h3>Challan # {{i + 1}}</h3>
+
+    <p><strong>Due Date:</strong>  {{c.dueDate}}</p>
+    <p><strong>Date of Offence:</strong>  {{c.date}}</p>
+    <p><strong>Fine Amount:</strong>  {{c.fineAmount}}</p>
+    <p><strong>Coordinates:</strong>  {{c.coordinates | json}}</p>
+    <p><strong>Payment Status:</strong>  {{c.paymentStatus ? "PAID" : "NOT PAID"}}</p>
+    <button mat-raised-button (click)="payChallan(c._id)" color="warn" [disabled]="c.paymentStatus">Pay Your Challan</button>
+  </mat-card>
+</mat-card>

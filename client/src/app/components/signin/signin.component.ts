@@ -13,22 +13,8 @@ import { FormArray,
 import { RouterModule, Router } from '@angular/router';
 import { ErrorStateMatcher } from '@angular/material/core';
 
-enum loginStatus {
-  NOT_TRIED = 0,
-  UNAUTHORIZED,
-  AUTHORIZED,
-  SERVER_ERROR,
-  BAD_REQUEST,
-  CRITICAL_ERROR
-};
+import { loginStatus, HTTP_RESPONSE_CODE, SigninService } from '../../services/signin.service';
 
-enum HTTP_RESPONSE_CODE {
-  UNAUTHORIZED = 401,
-  BAD_REQUEST = 400,
-  INTERNAL_SERVER_ERROR = 500,
-  NOT_IMPLEMENTED,
-  BAD_GATEWAY
-}
 export class MyErrorStateMatcher implements ErrorStateMatcher {
   isErrorState(control: FormControl | null, form: FormGroupDirective | NgForm | null): boolean {
     const isSubmitted = form && form.submitted;
@@ -56,7 +42,8 @@ export class SignInComponent implements OnInit {
   constructor(
     private fb: FormBuilder,
     private http: HttpClient,
-    private router: Router
+    private router: Router,
+    private loginService: SigninService
   ) { }
 
   ngOnInit() {
@@ -78,7 +65,7 @@ export class SignInComponent implements OnInit {
   onSubmit() {
     console.log(this.form.value);
     this.spinnerStatus = 1;
-    return this.http.post(this.postEndpoint + 'signin', this.form.value).toPromise().then(val => {
+    return this.loginService.performLogin(this.form.value).then(val => {
       switch((val as any).authLevel) {
         case(this.AuthLevels.USER_CITIZEN): {
           this.router.navigate(['/citizenDashboard']);

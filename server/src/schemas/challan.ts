@@ -10,7 +10,7 @@ export let ChallanSchema = new Schema({
   fineAmount: { type: Number },
   dueDate: { type: Date },
   coordinates: {
-    latitute: { type: Number },
+    latitude: { type: Number },
     longitude: { type: Number },
   },
   paymentStatus: {type: Boolean},

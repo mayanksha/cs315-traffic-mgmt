@@ -74,5 +74,11 @@ export class CreateCitizenComponent implements OnInit {
   onSubmit() {
     console.log(this.form.value);
     this.spinnerStatus = 1;
+    this.http.post(this.postEndpoint + 'createCitizenLicense', this.form.value, {withCredentials: true}).toPromise()
+      .then((val) => {
+        console.log(val)
+        this.singleChallans = (val as any);
+      })
+      .catch(console.error);
   }
 }

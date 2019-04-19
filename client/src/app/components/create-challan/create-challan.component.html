@@ -40,6 +40,7 @@
         <input matInput placeholder="Longitude" formControlName="longitude" [(value)]="coord.lat" class="full-width">
       </mat-form-field><br>
 
+  <button (click)="onSubmit()" type="submit" mat-raised-button color="primary" >Submit</button>
   </form>	
   <pre> {{ form.value | json }}</pre>
 </mat-card>

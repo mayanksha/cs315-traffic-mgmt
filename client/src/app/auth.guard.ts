@@ -1,13 +1,13 @@
 import { Injectable } from '@angular/core';
 import { CanActivate, ActivatedRouteSnapshot, RouterStateSnapshot, Router } from '@angular/router';
 import { Observable } from 'rxjs';
-import { LoginService } from './services/login.service';
+import { SigninService } from './services/signin.service';
 @Injectable({
 	providedIn: 'root'
 })
 export class AuthGuard implements CanActivate {
 	constructor(
-		private loginService: LoginService,
+		private loginService: SigninService,
 		private router: Router
 	) {}
 	canActivate(
@@ -18,7 +18,7 @@ export class AuthGuard implements CanActivate {
 					if (status) {
 						return Promise.resolve(true);
 					} else {
-						this.router.navigate(['/login']);
+						this.router.navigate(['/signin']);
 						return Promise.resolve(false); }
 				})
 				.catch(err => Promise.reject(err));

@@ -8,16 +8,21 @@ import { MapsComponent } from './components/maps/maps.component';
 import { HomeComponent } from './components/home/home.component';
 import { CitizenDashboardComponent } from './components/citizen-dashboard/citizen-dashboard.component';
 import { ReportAccidentComponent } from './components/report-accident/report-accident.component';
+import { RtoDashboardComponent } from './components/rto-dashboard/rto-dashboard.component';
+import { PoliceDashboardComponent } from './components/police-dashboard/police-dashboard.component';
+import { AuthGuard } from './auth.guard';
 
 const routes: Routes = [
   { path: '', component: HomeComponent },
   { path: 'signin', component: SignInComponent },
   { path: 'signup', component: SignUpComponent },
-  { path: 'createChallan', component: CreateChallanComponent },
-  { path: 'createCitizen', component: CreateCitizenComponent },
-  { path: 'citizenDashboard', component: CitizenDashboardComponent },
-  { path: 'reportAccident', component: ReportAccidentComponent },
-  { path: 'maps', component: MapsComponent },
+  { path: 'createChallan', component: CreateChallanComponent, canActivate: [AuthGuard] },
+  { path: 'createCitizen', component: CreateCitizenComponent, canActivate: [AuthGuard] },
+  { path: 'citizenDashboard', component: CitizenDashboardComponent, canActivate: [AuthGuard] },
+  { path: 'rtoDashboard', component: RtoDashboardComponent, canActivate: [AuthGuard] },
+  { path: 'policeDashboard', component: PoliceDashboardComponent, canActivate: [AuthGuard] },
+  { path: 'reportAccident', component: ReportAccidentComponent, canActivate: [AuthGuard] },
+  { path: 'maps', component: MapsComponent, canActivate: [AuthGuard] },
 ];
 
 @NgModule({

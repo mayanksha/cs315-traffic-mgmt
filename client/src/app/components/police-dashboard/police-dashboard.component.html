@@ -1,0 +1,86 @@
+<app-topbar></app-topbar>
+
+<div fxLayout="row" fxLayoutAlign="space-around center" >
+  <button mat-raised-button (click)="toggleVerify()" color="primary">Get License Info</button>
+  <button mat-raised-button (click)="openDialog()" color="primary">Report an Accident</button>
+  <button mat-raised-button (click)="toggleMap()" color="primary">{{ mapStatus ? "Hide": "Show"}} Map Data</button>
+  <button mat-raised-button (click)="ctoggle()" color="primary">{{ cDetails ? "Hide": "Show"}} Challan Details</button>
+  <button mat-raised-button (click)="openCreate()" color="primary">Create Challan</button>
+</div>
+<br>
+<div>
+  <app-maps *ngIf="mapStatus"></app-maps>
+</div>
+<div *ngIf="cDetails">
+  <div fxLayout="row" fxLayoutAlign="space-around center" >
+    <button mat-raised-button (click)="toggleId()" color="accent">Search Challan By License ID</button>
+    <button mat-raised-button (click)="toggleAll()" color="accent">Get All Challan</button>
+  </div>
+</div>
+
+
+<div *ngIf="verifyLic">
+  <mat-card>
+    <form [formGroup]="lform">
+      <mat-form-field>
+        <input matInput placeholder="License ID" class="full-width" formControlName="license">
+      </mat-form-field><br>
+      <button (click)="onLSubmit()" type="submit" mat-raised-button color="primary" class="fix-width" >Submit</button>
+    </form>  
+  </mat-card>
+</div>
+
+<mat-card id="license" *ngIf="license">
+  <h3>License Details</h3>
+  <div >
+    <p><strong>License Number:</strong>  {{license._id}}</p>
+    <p><strong>License Type:</strong>  {{license.licenseDetails.LType}}</p>
+    <p><strong>Expiration Date:</strong>  {{license.licenseDetails.expirationDate}}</p>
+    <p><strong>Name:</strong>  {{license.name}}</p>
+    <p><strong>Address:</strong>  {{license.personal.address}}</p>
+    <p><strong>Phone No.:</strong>  {{license.personal.phoneNumber}}</p>
+  </div>
+</mat-card>
+<div *ngIf="byId">
+  <br>
+  <mat-card>
+    <form [formGroup]="cform">
+      <mat-form-field>
+        <input matInput placeholder="License ID" class="full-width" formControlName="license">
+      </mat-form-field><br>
+      <button (click)="onSubmit()" type="submit" mat-raised-button color="primary" class="fix-width" >Submit</button>
+    </form>	
+  </mat-card>
+
+  <mat-card *ngFor="let c of singleChallans; let i = index">
+    <h3>Challan # {{i + 1}}</h3>
+
+    <p><strong>License ID:</strong>  {{c.license}}</p>
+    <p><strong>Due Date:</strong>  {{c.dueDate}}</p>
+    <p><strong>Date of Offence:</strong>  {{c.date}}</p>
+    <p><strong>Fine Amount:</strong>  {{c.fineAmount}}</p>
+    <p><strong>Coordinates:</strong>  {{c.coordinates | json}}</p>
+    <p><strong>Payment Status:</strong>  {{c.paymentStatus ? "PAID" : "NOT PAID"}}</p>
+    <p><strong>Police Officer Name:</strong>  {{c.policeOfficer}}</p>
+    <p><strong>Vehicle Number:</strong>  {{c.vehicleNumber}}</p>
+    <br>
+  </mat-card>
+</div>
+
+<div *ngIf="byAll">
+  <br>
+  <mat-card *ngFor="let c of challans; let i = index">
+    <h3>Challan # {{i + 1}}</h3>
+
+    <p><strong>License ID:</strong>  {{c.license}}</p>
+    <p><strong>Due Date:</strong>  {{c.dueDate}}</p>
+    <p><strong>Date of Offence:</strong>  {{c.date}}</p>
+    <p><strong>Fine Amount:</strong>  {{c.fineAmount}}</p>
+    <p><strong>Coordinates:</strong>  {{c.coordinates | json}}</p>
+    <p><strong>Payment Status:</strong>  {{c.paymentStatus ? "PAID" : "NOT PAID"}}</p>
+    <p><strong>Police Officer Name:</strong>  {{c.policeOfficer}}</p>
+    <p><strong>Vehicle Number:</strong>  {{c.vehicleNumber}}</p>
+    <br>
+  </mat-card>
+
+</div>

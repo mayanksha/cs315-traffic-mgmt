@@ -37,6 +37,8 @@ import { TopbarComponent } from './components/topbar/topbar.component';
 import { HomeComponent } from './components/home/home.component';
 import { CitizenDashboardComponent } from './components/citizen-dashboard/citizen-dashboard.component';
 import { ReportAccidentComponent } from './components/report-accident/report-accident.component';
+import { RtoDashboardComponent } from './components/rto-dashboard/rto-dashboard.component';
+import { PoliceDashboardComponent } from './components/police-dashboard/police-dashboard.component';
 @NgModule({
   declarations: [
     AppComponent,
@@ -49,6 +51,8 @@ import { ReportAccidentComponent } from './components/report-accident/report-acc
     HomeComponent,
     CitizenDashboardComponent,
     ReportAccidentComponent,
+    RtoDashboardComponent,
+    PoliceDashboardComponent,
   ],
   imports: [
     BrowserModule,

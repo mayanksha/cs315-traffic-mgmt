@@ -28,19 +28,20 @@ export class AccountCtrl {
     } else {
       console.log('[DEBUG] checkAdmin called by -')
       console.log(req.user)
-      res.sendStatus(403)
+      res.status(403).send({})
       return
     }
   }
 
   public checkRTO(req: Request, res: Response, next: NextFunction): void {
+    console.log(req.user);
     if (req.user.authLevel & (AuthLevels.USER_RTO | AuthLevels.USER_ADMIN)) {
       res.cookie('authLevel', AuthLevels.USER_RTO)
       next()
     } else {
       console.log('[DEBUG] checkRTO called by -')
       console.log(req.user)
-      res.sendStatus(403)
+      res.status(403).send({})
       return
     }
   }
@@ -50,7 +51,7 @@ export class AccountCtrl {
     } else {
       console.log('[DEBUG] checkPolice called by -')
       console.log(req.user)
-      res.sendStatus(403)
+      res.status(403).send({})
       return
     }
   }
@@ -59,27 +60,28 @@ export class AccountCtrl {
     res: Response,
     next: NextFunction
   ): void {
-    if (
-      (req.user.authLevel & AuthLevels.USER_POLICE) |
-      (req.user.authLevel & AuthLevels.USER_RTO) | (req.user.authLevel & AuthLevels.USER_ADMIN)
-    ) {
+    if (req.user.authLevel & (AuthLevels.USER_POLICE | AuthLevels.USER_RTO | AuthLevels.USER_ADMIN)) {
       next()
     } else {
       console.log('[DEBUG] checkPoliceOrRTO called by -')
       console.log(req.user)
-      res.sendStatus(403)
+      res.status(403).send({})
       return
     }
   }
   public checkLogin = (req: Request, res: Response, next: NextFunction) => {
     if (req.isAuthenticated()) {
-      console.log(req.cookies);
-      next()}
-    else res.sendStatus(401)
+      next()
+    }
+    else { 
+      console.log("CheckLogin Failed");
+      res.status(401).send({}) 
+    }
   }
 
   public SignOut = (req: Request, res: Response) => {
     req.logout()
-    res.sendStatus(200)
+    /*res.status(200).end()*/
+    res.status(200).send({});
   }
 }

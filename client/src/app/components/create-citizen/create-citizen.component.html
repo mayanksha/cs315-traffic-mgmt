@@ -1,15 +1,5 @@
-<app-topbar></app-topbar>
 <mat-card fxLayout="column" fxLayoutAlign="space-evenly stretch" *ngIf="!success" id="mat-card-box">
-
   <form [formGroup]="form">
-
-    <!--assert(typeof req.body.license !== "undefined");
-      -assert(typeof req.body.fineAmount !== "undefined");
-      -assert(typeof req.body.vehicleNo !== "undefined");
-      -assert(typeof req.body.policeOfficer !== "undefined");
-      -assert(typeof req.body.dueDate !== "undefined");
-      -assert(typeof req.body.coordinates !== "undefined");-->
-
       <mat-form-field>
         <input matInput placeholder="Name" formControlName="Name" class="full-width">
       </mat-form-field><br>
