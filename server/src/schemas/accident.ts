@@ -1,9 +1,11 @@
 import { Schema } from 'mongoose'
 
 export let AccidentSchema = new Schema({
-  reporterLicense: { type: String },
+  reporterEmail: { type: String },
   coordinates: {
     latitute: { type: Number },
     longitude: { type: Number },
-  }
+  },
+  date: { type: Date, default: Date.now() },
+  description: { type: String}
 })

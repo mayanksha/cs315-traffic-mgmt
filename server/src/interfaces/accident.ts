@@ -1,7 +1,9 @@
 export interface IAccident {
-  reporterLicense: string,
+  reporterEmail: string,
   coordinates: {
     latitute: number,
     longitude: number,
-  }
+  },
+  date: Date,
+  description: string
 }
