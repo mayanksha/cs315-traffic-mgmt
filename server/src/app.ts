@@ -225,16 +225,7 @@ function updateAuthLevelHandler(req: Request, res: Response, next: NextFunction)
   assert(typeof req.body.email !== "undefined");
   assert(typeof req.body.authLevel !== "undefined");
 
-  UserModel.findOne({ email: req.body.email }).exec()
-    .then((user: IUserModel | null) => {
-      if (user) {
-        user.updateOne({ email: req.body.email }, { authLevel: req.body.authLevel });
-        return user.save();
-      }
-      else {
-        return Promise.reject(new Error(`User ${req.body.email} doesn't exists!`));
-      }
-    })
+  UserModel.findOneAndUpdate({ email: req.body.email }, { authLevel: req.body.authLevel }).exec()
     .then((ret) => {
       console.log(ret);
       res.sendStatus(200);
@@ -545,7 +536,7 @@ function getVehicleInfoHandler(req: Request, res: Response, next: NextFunction) 
   let vehicleExistPromise: Promise<IVehicleModel | null> = 
   VehicleModel.findOne({"personal.email": req.user.email}).exec();
   vehicleExistPromise
-  .then((vehicle: IvehicleModel | null) => {
+  .then((vehicle: IVehicleModel | null) => {
     console.log(vehicle);
     res.send(vehicle);
   })
@@ -654,43 +645,43 @@ app.post('/updatePoliceLocation',
   updatePoliceLocationHandler
 )
 
-app.get('/viewChallaanByUser', 
-  accController.checkLogin,
-  viewChallaanByUserHandler
-)
-
-app.get('/viewChallaan', 
-  accController.checkLogin,
-  accController.checkRTO,
-  viewChallaanHandler
-)
-
-app.get('/viewReceiptById', 
-  accController.checkLogin,
-  viewReceiptByIdHandler
-)
-
-app.get('/viewAllReceipts', 
-  accController.checkLogin,
-  accController.checkRTO,
-  viewAllReceiptsHandler
-)
-
-app.post('payOffence',
-  accController.checkLogin,
-  payOffenceHandler
-)
-
-app.post('reportAcciddent',
-  accController.checkLogin,
-  reportAcciddentHandler
-)
-
-app.get('getAccidents',
-  accController.checkLogin,
-  accController.checkRTO,
-  getAccidentsHandler
-)
+/*app.get('/viewChallaanByUser', 
+ *  accController.checkLogin,
+ *  viewChallaanByUserHandler
+ *)
+ *
+ *app.get('/viewChallaan', 
+ *  accController.checkLogin,
+ *  accController.checkRTO,
+ *  viewChallaanHandler
+ *)
+ *
+ *app.get('/viewReceiptById', 
+ *  accController.checkLogin,
+ *  viewReceiptByIdHandler
+ *)
+ *
+ *app.get('/viewAllReceipts', 
+ *  accController.checkLogin,
+ *  accController.checkRTO,
+ *  viewAllReceiptsHandler
+ *)
+ *
+ *app.post('payOffence',
+ *  accController.checkLogin,
+ *  payOffenceHandler
+ *)
+ *
+ *app.post('reportAcciddent',
+ *  accController.checkLogin,
+ *  reportAcciddentHandler
+ *)
+ *
+ *app.get('getAccidents',
+ *  accController.checkLogin,
+ *  accController.checkRTO,
+ *  getAccidentsHandler
+ *)*/
 // Route to Sign any user out. If the user is not logged in, 
 // it automatically returns 401 Unauthorized
 
