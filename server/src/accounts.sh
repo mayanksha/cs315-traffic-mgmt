@@ -19,7 +19,7 @@ curl -X POST \
   -H 'cache-control: no-cache' \
   -d '{
 	"email": "admin@iitk.ac.in",
-	"authLevel": "1"
+	"authLevel": "14"
 }'
 
 
