@@ -5,7 +5,7 @@ export interface ICitizen {
     address: string
     phoneNumber: string
     email: string
-    license: string
+    //license: string
   }
   registeredVehicleNos: string[]
   licenseDetails: {

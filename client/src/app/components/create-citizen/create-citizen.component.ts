@@ -12,6 +12,11 @@ import { FormArray,
 
 import { ErrorStateMatcher } from '@angular/material/core';
 
+export interface LicenseType {
+  value: string;
+  viewValue: string;
+}
+
 export class MyErrorStateMatcher implements ErrorStateMatcher {
   isErrorState(control: FormControl | null, form: FormGroupDirective | NgForm | null): boolean {
     const isSubmitted = form && form.submitted;
@@ -28,6 +33,22 @@ export class CreateCitizenComponent implements OnInit {
   form: FormGroup;
   spinnerStatus = 0;
   postEndpoint = 'http://localhost:8000/';
+  Ltypes: LicenseType[] = [
+    {value: 'MC_50CC' , viewValue:'Motorcycle 50cc'},
+    {value: 'MC_EX50CC', viewValue:'Motorcycle more than 50cc'},
+    {value: 'MCWOG', viewValue:'Motorcycle Without Gear'},
+    {value: 'MCWG', viewValue:'Motorcycle With Gear'},
+    {value: 'LMV', viewValue:'Light Motor Vehicle'},
+    {value: 'LMV_NT', viewValue:'Light Motor Vehicle—Non Transport'},
+    {value: 'LMV_TR', viewValue:'Light Motor Vehicle—Transpor'},
+    {value: 'LDRXCV', viewValue:'Loader, Excavator, Hydraulic Equipments'},
+    {value: 'HMV', viewValue:'Heavy Motor Vehicle'},
+    {value: 'HPMV', viewValue:'Heavy Passenger Motor Vehicle'},
+    {value: 'HTV', viewValue:'Heavy Goods Motor Vehicle, Heavy Passenger Motor Vehicle'},
+    {value: 'TRANS', viewValue:'Heavy Goods Motor Vehicle, Heavy Passenger Motor Vehicle'},
+    {value: 'TRAILERE', viewValue:'A person holding a heavy vehicle driving licence can only apply for heavy trailer licence'}
+
+  ];
 
   coord = {
     lat: '34.5654',
@@ -40,14 +61,12 @@ export class CreateCitizenComponent implements OnInit {
 
   ngOnInit() {
     this.form = this.fb.group({
-      license : ['', [Validators.required]],
-      fineAmount : ['', [Validators.required, Validators.min(0), Validators.max(100000)]],
-      vehicleNo : ['', [Validators.required]],
-      dueDate : ['', [Validators.required]],
-      policeOfficer : ['', [Validators.required]],
-      password : ['', [ Validators.required ]],
-      latitude : [{value: '', disabled : true}, [ Validators.required ]],
-      longitude : [{value: '', disabled : true}, [ Validators.required ]],
+      Name : ['', [Validators.required]],
+      Address : ['', [Validators.required]],
+      PhoneNumber : ['',[Validators.required]],
+      Email : ['',[Validators.required, Validators.email]],
+      VehicleNo : ['', [Validators.required]],
+      licenseType : ['', Validators.required]
     });
 
   }

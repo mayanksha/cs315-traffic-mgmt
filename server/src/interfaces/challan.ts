@@ -1,5 +1,6 @@
 export interface IChallan {
   license: string
+  email: string
   vehicleNo: string
   date: Date
   policeOfficer: string

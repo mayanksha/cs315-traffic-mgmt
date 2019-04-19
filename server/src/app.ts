@@ -94,6 +94,89 @@ function getAllChallanHandler(req: Request, res: Response, next: NextFunction): 
   })
 }
 
+function getChallanByUserHandler(req: Request, res: Response, next: NextFunction): void {
+  console.log(req.user);
+  ChallanModel.find({"email": req.user.email})
+  .then((challanList: IChallanModel[]) => {
+    console.log(challanList);
+    res.send(challanList);
+  })
+  .catch((err) => {
+    res.sendStatus(404);
+    console.error(err);
+  })
+}
+
+//give a license numberr and get back all assosciated challans
+function getChallanByIdHandler(req: Request, res: Response, next: NextFunction): void {
+  //assert(typeof req.body.email !== "undefined");
+  assert(typeof req.body.license !== "undefined");
+  //console.log(req.user);
+  if (!mongoose.Types.ObjectId.isValid(req.body.license)) {
+    res.sendStatus(400);
+    return;
+  }
+  let licensePromise: Promise<ICitizenModel | null> = 
+  CitizenModel.findOne({ _id: req.body.license }).exec();
+  licensePromise
+  .then((citizen: ICitizenModel | null ): ICitizenModel | Promise<ICitizenModel> => {
+    console.log(citizen);
+    if (!citizen) {
+      let err = new Error();
+      err.message = `Citizen ${citizen} doesn't exists in DB!`;
+      err.name = "E_NOT_EXISTS";
+      return Promise.reject(err);
+    }
+    else {
+      return citizen;
+    };
+  })
+  .then((citizen: ICitizenModel): PromiseLike<IChallanModel[]> => {
+    return ChallanModel.find({_id: req.body.license});
+  })
+  .then( (challanList: IChallanModel[])=> {
+    console.log(challanList);
+    res.send(challanList);
+  })
+  .catch((err) => {
+    if ( err.name === "E_NOT_EXISTS" )
+      res.sendStatus(404);
+    else
+      res.sendStatus(500);
+    console.error(err);
+  })
+  
+}
+
+
+function payChallanHandler(req: Request, res: Response, next: NextFunction): void {
+  assert(typeof req.body.challanId !== "undefined");
+  let ChallanExistPromise: Promise<IChallanModel | null>  = 
+  ChallanModel.findOneAndUpdate({_id: req.body.challanId}, {paymentStatus : true}).exec();
+  ChallanExistPromise
+  .then((challan: IChallanModel | null): any | Promise<IChallanModel> => {
+    console.log(challan);
+    if(!challan) {
+      let err = new Error();
+      err.message = `Challan doesn't exists in DB!`;
+      err.name = "E_NOT_EXISTS";
+      return Promise.reject(err);
+    }
+    else return challan;
+
+  })
+  .then((challan: IChallanModel) => {
+    console.log(challan);
+    res.sendStatus(200);
+  })
+  .catch((err) => {
+    if ( err.name === "E_NOT_EXISTS" )
+      res.sendStatus(404);
+    else
+      res.sendStatus(500);
+  })
+}
+
 function createChallanHandler(req: Request, res: Response, next: NextFunction): void {
   // Assertions to check whether it isn't a Bad Request
   assert(typeof req.body.license !== "undefined");
@@ -109,7 +192,7 @@ function createChallanHandler(req: Request, res: Response, next: NextFunction): 
    *);*/
   let storeCitizen: ICitizenModel;
 
-  // The _id field of CitizenSchema correspods to the 
+  // The _id field of CitizenSchema corresponds to the 
   // License Number of that person
   if (!mongoose.Types.ObjectId.isValid(req.body.license)) {
     res.sendStatus(400);
@@ -132,7 +215,7 @@ function createChallanHandler(req: Request, res: Response, next: NextFunction): 
       return citizen;
     };
   })
-  // TODO: Atomicity Issue here, we need to fix this by removing the challan schema and adding a
+  // DONE: Atomicity Issue here, we need to fix this by removing the challan schema and adding a
   // Challan field in the Citizen Schema. MongoDB doesn't support transactions (or if 
   // it does, then they need database replicas to be working)
   //
@@ -142,7 +225,8 @@ function createChallanHandler(req: Request, res: Response, next: NextFunction): 
   .then((citizen: ICitizenModel | null ): PromiseLike<IChallanModel> => {
     if (citizen) {
       let newChallan = new ChallanModel();
-      newChallan.license = citizen._id;
+      newChallan.license = req.body.license;
+      newChallan.email = citizen.personal.email;
       newChallan.fineAmount = req.body.fineAmount;
       newChallan.vehicleNo = req.body.vehicleNo;
       newChallan.policeOfficer = req.body.policeOfficer;
@@ -202,9 +286,11 @@ function createCitizenHandler(req: Request, res: Response, next: NextFunction): 
       newCitizen.personal.address = req.body.personal.address;
       newCitizen.personal.phoneNumber = req.body.personal.phoneNumber;
       newCitizen.personal.email = req.body.personal.email;
-      //newCitizen.personal.license = req.body.personal.license;
       newCitizen.registeredVehicleNos = req.body.registeredVehicleNos;
       newCitizen.licenseDetails.LType = req.body.licenseDetails.LType;
+      newCitizen.licenseDetails.expirationDate = req.body.licenseDetails.expirationDate;
+      newCitizen.licenseDetails.creationDate = req.body.licenseDetails.creationDate;
+      newCitizen.licenseDetails.learnersLicense = req.body.licenseDetails.learnersLicense;
       return newCitizen.save();
     }
     else return Promise.reject(new Error("Citizen Already Exists In DB!")); 
@@ -235,6 +321,7 @@ function updateAuthLevelHandler(req: Request, res: Response, next: NextFunction)
       console.error(err) 
     });
 };
+
 function registerVehicleHandler(req: Request, res: Response, next: NextFunction) {
   assert(typeof req.body.vehicleNo !== "undefined");
   assert(typeof req.body.vehicleType !== "undefined");
@@ -316,10 +403,6 @@ function createTrafficPoliceHandler(req: Request, res: Response, next: NextFunct
   assert(typeof req.body.email !== "undefined");
   assert(typeof req.body.designation !== "undefined");
   assert(typeof req.body.location !== "undefined");
-  if (!mongoose.Types.ObjectId.isValid(req.body.email)) {
-    res.sendStatus(400);
-    return;
-  }
   let policeExistPromise: Promise<IPoliceModel | null> = 
   PoliceModel.findOne({"email": req.body.email}).exec();
   policeExistPromise
@@ -374,6 +457,7 @@ function getUserInfoByUserHandler(req: Request, res: Response, next: NextFunctio
   })
 }
 
+//Given a license number, get corresponding information
 function getUserInfoHandler(req: Request, res: Response, next: NextFunction): void {
   assert(typeof req.body.license !== "undefined");
   //console.log(req.user);
@@ -411,6 +495,7 @@ function getUserInfoHandler(req: Request, res: Response, next: NextFunction): vo
 
 }
 
+//Given police id and new location, update to new location
 function updatePoliceLocationHandler(req: Request, res: Response, next: NextFunction): void {
   assert(typeof req.body.policeId !== "undefined");
   assert(typeof req.body.location !== "undefined");
@@ -418,12 +503,11 @@ function updatePoliceLocationHandler(req: Request, res: Response, next: NextFunc
     res.sendStatus(400);
     return;
   }
-  console.log("BAHAR");
+  //console.log("BAHAR");
   let policeExistPromise: Promise<IPoliceModel | null> = 
   PoliceModel.findOneAndUpdate({_id: req.body.policeId}, {location : req.body.location}).exec();
   policeExistPromise
   .then((police: IPoliceModel | null ): any | Promise<IPoliceModel>  => {
-    console.log(police);
     if (!police) {
       let err = new Error();
       err.message = `Police ${police} doesn't exists in DB!`;
@@ -435,6 +519,8 @@ function updatePoliceLocationHandler(req: Request, res: Response, next: NextFunc
     };
   })
   .then( (police: IPoliceModel) => {
+    console.log(police);
+    res.sendStatus(200);
     
   })
   .catch((err) => {
@@ -446,6 +532,7 @@ function updatePoliceLocationHandler(req: Request, res: Response, next: NextFunc
   })
 }
 
+//GIVEN POLICE ID, GET DETAILS OF POLICE
 function getPoliceDetailsHandler(req: Request, res: Response, next: NextFunction): void {
   assert(typeof req.body.policeId !== "undefined");
   if (!mongoose.Types.ObjectId.isValid(req.body.policeId)) {
@@ -469,7 +556,7 @@ function getPoliceDetailsHandler(req: Request, res: Response, next: NextFunction
   })
   .then((police: IPoliceModel) => {
     console.log(police);
-    res.sendStatus(200);
+    res.send(police);
     //else return Promise.reject(new Error("Citizen Not Found in DB!"));
   })
   .catch((err) => {
@@ -532,18 +619,6 @@ function getVehicleInfoHandler(req: Request, res: Response, next: NextFunction) 
   assert(typeof req.body.VINNo !== "undefined");
   // TODO: Handle Insurance too
   // TODO: CHeck whether such a license exists or not?
-
-  let vehicleExistPromise: Promise<IVehicleModel | null> = 
-  VehicleModel.findOne({"personal.email": req.user.email}).exec();
-  vehicleExistPromise
-  .then((vehicle: IVehicleModel | null) => {
-    console.log(vehicle);
-    res.send(vehicle);
-  })
-  .catch((err) => {
-    res.sendStatus(404);
-    console.error(err);
-  })
   let registerPromise: Promise<IVehicleModel | null> = VehicleModel.findOne({ VINNo: req.body.VINNo }).exec();
   registerPromise 
     .then((vehicle: IVehicleModel | null): IVehicleModel | Promise<IVehicleModel> => {
@@ -570,118 +645,177 @@ function getVehicleInfoHandler(req: Request, res: Response, next: NextFunction) 
     })
 }
 
+function reportAccidentHandler(req: Request, res: Response, next: NextFunction): void {
+  assert(typeof req.body.coordinates !== "undefined");
+  // if (!mongoose.Types.ObjectId.isValid(req.body.reporterLicense)) {
+  //   res.sendStatus(400);
+  //   return;
+  // }
 
-app.get('/getChallanById');
-app.get('/getChallanByUser');
+  let newAccident = new AccidentModel();
+  newAccident.reporterEmail = req.user.email;
+  newAccident.date = req.body.date;
+  newAccident.coordinates = req.body.coordinates;
+  newAccident.description = req.body.description;
+  newAccident.save()
+  .then((accident: IAccidentModel | null ): any  => {
+    console.log(accident);
+    res.sendStatus(200);
+  })
+  .catch((err) => {
+    console.error(err);
+    res.sendStatus(500);
+  })
+}
+
+function getAccidentsHandler(req: Request, res: Response, next: NextFunction): void {
+  assert(typeof req.body.startDate !== "undefined");
+  assert(typeof req.body.endDate !== "undefined");
+  let AccidentPromise: Promise<IAccidentModel[]> = AccidentModel.find({date: {$gte: req.body.startDate, $lte:req.body.endDate}}).sort({ date: 1 }).exec();
+  AccidentPromise
+  .then((allAccidents) => {
+    res.send(allAccidents);
+  })
+  .catch((err) => {
+    res.sendStatus(500);
+    console.error(err);
+  })
+
+}
+
+function getTrafficLightsHandler(req: Request, res: Response, next: NextFunction) {
+  TrafficModel.find({}).exec()
+    .then((results: ITrafficModel[]) => {
+      res.status(200).send(results);
+    })
+    .catch((err) => {
+      res.sendStatus(500);
+      console.error(err);
+    })
+}
+
+//CHALLAN ROUTES
+
+app.post('/createChallan',  //WORKS
+  accController.checkLogin,
+  accController.checkRTO,
+  createChallanHandler 
+)
+
+app.get('/challanByUser', 
+  accController.checkLogin,
+  getChallanByUserHandler
+)
+
+app.get('/challanById', 
+  accController.checkLogin,
+  accController.checkRTO,
+  getChallanByIdHandler
+)
+
 app.get('/allChallan', 
   accController.checkLogin,
   accController.checkRTO,
   getAllChallanHandler
 )
-app.get('/verifyLicenseNumber', 
+
+app.post('/payChallan',
+  accController.checkLogin,
+  payChallanHandler
+)
+
+//CITIZEN ROUTES
+app.post('/createCitizenLicense', //WORKS
+  accController.checkLogin,
+  accController.checkRTO,
+  createCitizenHandler
+)
+
+app.get('/verifyLicenseNumber', //WORKS
   accController.checkLogin,
   accController.checkRTO,
   verifyLicenseHandler
 );
 
-app.post('/createChallan', 
-  accController.checkLogin,
-  accController.checkRTO,
-  createChallanHandler 
-)
-app.post('/createCitizenLicense',
-  accController.checkLogin,
-  accController.checkRTO,
-  createCitizenHandler
-)
-app.post('/registerVehicle',
-  accController.checkLogin,
-  accController.checkRTO,
-  registerVehicleHandler
-)
-
-app.post('/createTrafficPolice',
-  accController.checkLogin,
-  accController.checkRTO,
-  createTrafficPoliceHandler
-)
-
-app.get('/getPoliceDetails',
-  accController.checkLogin,
-  accController.checkRTO,
-  getPoliceDetailsHandler
-)
-
-
-app.post('/updateAuthLevel',
-  updateAuthLevelHandler
-);
-
-app.get('/getUserInfoByUser', //TO CHECK
+app.get('/getUserInfoByUser', //TO DO TEST
   accController.checkLogin,
   getUserInfoByUserHandler
 );
 
-app.get('/getUserInfo',
+app.get('/getUserInfo', //WORKS
   accController.checkLogin,
   accController.checkRTO,
   getUserInfoHandler
 );
 
-app.get('/getVehicleInfoByUser',
-  accController.checkLogin,
-  getVehicleInfoByUserHandler
-);
-
-app.get('/getVehicleInfo',
+//POLICE ROUTES
+app.post('/createTrafficPolice', //WORKS
   accController.checkLogin,
   accController.checkRTO,
-  getVehicleInfoHandler
-);
+  createTrafficPoliceHandler
+)
 
-app.post('/updatePoliceLocation', 
+app.get('/getPoliceDetails', //WORKS
+  accController.checkLogin,
+  accController.checkRTO,
+  getPoliceDetailsHandler
+)
+
+app.post('/updatePoliceLocation', //WORKS
   accController.checkLogin,
   accController.checkRTO,
   updatePoliceLocationHandler
 )
 
-/*app.get('/viewChallaanByUser', 
- *  accController.checkLogin,
- *  viewChallaanByUserHandler
- *)
- *
- *app.get('/viewChallaan', 
- *  accController.checkLogin,
- *  accController.checkRTO,
- *  viewChallaanHandler
- *)
- *
- *app.get('/viewReceiptById', 
- *  accController.checkLogin,
- *  viewReceiptByIdHandler
- *)
- *
- *app.get('/viewAllReceipts', 
- *  accController.checkLogin,
- *  accController.checkRTO,
- *  viewAllReceiptsHandler
- *)
- *
- *app.post('payOffence',
- *  accController.checkLogin,
- *  payOffenceHandler
- *)
- *
- *app.post('reportAcciddent',
- *  accController.checkLogin,
- *  reportAcciddentHandler
- *)
- *
- *app.get('getAccidents',
- *  accController.checkLogin,
- *  accController.checkRTO,
- *  getAccidentsHandler
- *)*/
+//VEHICLE ROUTES
+app.post('/registerVehicle', //WORKS
+  accController.checkLogin,
+  accController.checkRTO,
+  registerVehicleHandler
+)
+
+app.get('/getVehicleInfoByUser', //TO DO AND TO DO CHECK
+  accController.checkLogin,
+  getVehicleInfoByUserHandler
+);
+
+app.get('/getVehicleInfo', //WORKS
+  accController.checkLogin,
+  accController.checkRTO,
+  getVehicleInfoHandler
+);
+
+//ACCIDENT ROUTES
+app.post('/reportAccident', //WORKS
+  accController.checkLogin,
+  reportAccidentHandler
+)
+
+app.get('/getAccidents', //WORKS
+  accController.checkLogin,
+  accController.checkRTO,
+  getAccidentsHandler
+)
+
+// app.get('/getUserReportedAccidents',
+//   accController.checkLogin,
+//   accController.checkRTO,
+//   getUserReportedAccidentsHandler
+// )
+
+//TRAFFIC LIGHTS HANDLER
+app.post('/updateTrafficLights',
+        updateTrafficLightsHandler);
+
+
+app.get('/getTrafficLights',
+        getTrafficLightsHandler);
+
+//AUTHENTICATION ROUTES
+app.post('/updateAuthLevel',
+  updateAuthLevelHandler
+);
+
 // Route to Sign any user out. If the user is not logged in, 
 // it automatically returns 401 Unauthorized
 
@@ -741,32 +875,8 @@ function updateTrafficLightsHandler(req: Request, res: Response, next: NextFunct
       console.error(err);
     })
 }
+
 // TODO: CheckLogin and Add AUTH Level RTO
-app.post('/updateTrafficLights',
-        updateTrafficLightsHandler);
-
-function getTrafficLightsHandler(req: Request, res: Response, next: NextFunction) {
-  TrafficModel.find({}).exec()
-    .then((results: ITrafficModel[]) => {
-      res.status(200).send(results);
-    })
-    .catch((err) => {
-      res.sendStatus(500);
-      console.error(err);
-    })
-}
-app.get('/getTrafficLights',
-        getTrafficLightsHandler);
-
-// TODO: 
-function registerPoliceOfficerHandler(req: Request, res: Response, next: NextFunction) {
-    
-}
-app.post('/registerPoliceOfficer',
-  /*accController.checkLogin,
-   *accController.checkRTO,*/
-  registerPoliceOfficerHandler 
-)
 app.use('/*', (err, req: Request, res: Response, next: NextFunction) => {
   // Assertions errors are wrong user inputs
   console.error(err);

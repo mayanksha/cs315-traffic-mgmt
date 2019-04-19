@@ -1,7 +1,6 @@
 #Personal User  (POST) -- access control RTO
 #Traffice Police creation (POST) -- RTO
 #Vehicle REgistr - POST - RTO
-ReportCitizenOffences - POST - All
 
 #ChallanCreation - (POST) - Traffic Police  (Takes location of offender (Police?))
 #Ciztizen Creation
@@ -28,7 +27,7 @@ GetVehicleDetailsByUser
 #VerifyLicenseNumber - Check whether the license if valid or not -- RTO or Police
 
 
-
+GET ACCIDENTS REPORTED KHUD KE
 
 Get User Info from Vehicle Information
 ** ADD - Payment receipts schema and models

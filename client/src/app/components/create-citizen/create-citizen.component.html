@@ -1,7 +1,5 @@
-<p>
-  create-citizen works!
-</p>
-<mat-card>
+<app-topbar></app-topbar>
+<mat-card fxLayout="column" fxLayoutAlign="space-evenly stretch" *ngIf="!success" id="mat-card-box">
 
   <form [formGroup]="form">
 
@@ -13,35 +11,36 @@
       -assert(typeof req.body.coordinates !== "undefined");-->
 
       <mat-form-field>
-        <input matInput placeholder="License ID/Number" formControlName="license">
+        <input matInput placeholder="Name" formControlName="Name" class="full-width">
       </mat-form-field><br>
       <mat-form-field>
-        <input matInput placeholder="Fine Amount (in Rs.)" formControlName="fineAmount">
+        <input matInput placeholder="Address" formControlName="Address" class="full-width">
       </mat-form-field><br>
       <mat-form-field>
-        <input matInput placeholder="Vehicle No." formControlName="vehicleNo">
+        <input matInput placeholder="Ph. Number" formControlName="PhoneNumber" class="full-width">
       </mat-form-field><br>
       <mat-form-field>
-        <input matInput placeholder="Police Officer's ID" formControlName="policeOfficer">
+        <input matInput placeholder="Email" formControlName="Email" class="full-width">
       </mat-form-field><br>
+      <mat-form-field>
+        <input matInput placeholder="Vehicle No." formControlName="VehicleNo" class="full-width">
+      </mat-form-field><br>
+      <mat-form-field>
+        <mat-select formControlName="licenseType" placeholder="License Type" class="full-width">
+          <mat-option *ngFor="let a of Ltypes" [value]="a.value">
+            {{a.viewValue}}
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+      
 
-      <mat-form-field>
-        <input matInput [matDatepicker]="picker" placeholder="Choose a date" formControlName="dueDate">
-        <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
-        <mat-datepicker #picker></mat-datepicker>
-      </mat-form-field><br>
       <!--<mat-form-field>
         -  <input matInput placeholder="Due Date (for payment)" formControlName="dueDate">
         -</mat-form-field><br>-->
 
-      <mat-form-field>
-        <input matInput placeholder="Latitude" formControlName="latitude" [(value)]="coord.long">
-      </mat-form-field><br>
-
-      <mat-form-field>
-        <input matInput placeholder="Longitude" formControlName="longitude" [(value)]="coord.lat">
-      </mat-form-field><br>
 
   </form>	
+  <button (click)="onSubmit()" type="submit" mat-raised-button color="primary" >Submit</button>
   <pre> {{ form.value | json }}</pre>
+
 </mat-card>

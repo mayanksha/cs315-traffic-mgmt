@@ -1,7 +1,8 @@
 import { Schema } from 'mongoose'
 
 export let ChallanSchema = new Schema({
-  license: { type: String },
+  license: {type: String},
+  email: { type: String },
   vehicleNo: { type: String },
   date: { type: Date, default: Date.now() },
   policeOfficer: { type: String },
