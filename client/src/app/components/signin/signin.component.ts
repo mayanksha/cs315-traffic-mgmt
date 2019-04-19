@@ -10,6 +10,7 @@ import { FormArray,
   FormGroupDirective
 } from '@angular/forms';
 
+import { RouterModule, Router } from '@angular/router';
 import { ErrorStateMatcher } from '@angular/material/core';
 
 enum loginStatus {
@@ -54,7 +55,8 @@ export class SignInComponent implements OnInit {
 
   constructor(
     private fb: FormBuilder,
-    private http: HttpClient
+    private http: HttpClient,
+    private router: Router
   ) { }
 
   ngOnInit() {
@@ -77,7 +79,20 @@ export class SignInComponent implements OnInit {
     console.log(this.form.value);
     this.spinnerStatus = 1;
     return this.http.post(this.postEndpoint + 'signin', this.form.value).toPromise().then(val => {
-      console.log(val);
+      switch((val as any).authLevel) {
+        case(this.AuthLevels.USER_CITIZEN): {
+          this.router.navigate(['/citizenDashboard']);
+          break;
+        } 
+        case(this.AuthLevels.USER_POLICE): {
+          this.router.navigate(['/policeDashboard']);
+          break;
+        } 
+        case(this.AuthLevels.USER_RTO): {
+          this.router.navigate(['/rtoDashboard']);
+          break;
+        } 
+      }
       this.status = loginStatus.AUTHORIZED;
       setTimeout(() => this.spinnerStatus = 0, 1000);
     })
