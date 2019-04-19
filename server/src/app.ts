@@ -552,8 +552,6 @@ function getVehicleInfoHandler(req: Request, res: Response, next: NextFunction) 
     res.sendStatus(404);
     console.error(err);
   })
-
-
   let registerPromise: Promise<IVehicleModel | null> = VehicleModel.findOne({ VINNo: req.body.VINNo }).exec();
   registerPromise 
     .then((vehicle: IVehicleModel | null): IVehicleModel | Promise<IVehicleModel> => {
