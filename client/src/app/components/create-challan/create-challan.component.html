@@ -1,8 +1,5 @@
-<p>
-create-challan works!
-</p>
-
-<mat-card>
+<app-topbar></app-topbar>
+<mat-card fxLayout="column" fxLayoutAlign="space-evenly stretch" *ngIf="!success" id="mat-card-box">
 
   <form [formGroup]="form">
 
@@ -14,20 +11,20 @@ create-challan works!
       -assert(typeof req.body.coordinates !== "undefined");-->
 
       <mat-form-field>
-        <input matInput placeholder="License ID/Number" formControlName="license">
+        <input matInput placeholder="License ID/Number" formControlName="license" class="full-width">
       </mat-form-field><br>
       <mat-form-field>
-        <input matInput placeholder="Fine Amount (in Rs.)" formControlName="fineAmount">
+        <input matInput placeholder="Fine Amount (in Rs.)" formControlName="fineAmount" class="full-width">
       </mat-form-field><br>
       <mat-form-field>
-        <input matInput placeholder="Vehicle No." formControlName="vehicleNo">
+        <input matInput placeholder="Vehicle No." formControlName="vehicleNo" class="full-width">
       </mat-form-field><br>
       <mat-form-field>
-        <input matInput placeholder="Police Officer's ID" formControlName="policeOfficer">
+        <input matInput placeholder="Police Officer's ID" formControlName="policeOfficer" class="full-width">
       </mat-form-field><br>
 
       <mat-form-field>
-        <input matInput [matDatepicker]="picker" placeholder="Choose a date" formControlName="dueDate">
+        <input matInput [matDatepicker]="picker" placeholder="Choose a date" formControlName="dueDate" class="full-width">
         <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
         <mat-datepicker #picker></mat-datepicker>
       </mat-form-field><br>
@@ -36,11 +33,11 @@ create-challan works!
         -</mat-form-field><br>-->
 
       <mat-form-field>
-        <input matInput placeholder="Latitude" formControlName="latitude" [(value)]="coord.long">
+        <input matInput placeholder="Latitude" formControlName="latitude" [(value)]="coord.long" class="full-width">
       </mat-form-field><br>
 
       <mat-form-field>
-        <input matInput placeholder="Longitude" formControlName="longitude" [(value)]="coord.lat">
+        <input matInput placeholder="Longitude" formControlName="longitude" [(value)]="coord.lat" class="full-width">
       </mat-form-field><br>
 
   </form>	

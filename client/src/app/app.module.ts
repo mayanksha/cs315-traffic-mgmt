@@ -36,6 +36,7 @@ import { MapsComponent } from './components/maps/maps.component';
 import { TopbarComponent } from './components/topbar/topbar.component';
 import { HomeComponent } from './components/home/home.component';
 import { CitizenDashboardComponent } from './components/citizen-dashboard/citizen-dashboard.component';
+import { ReportAccidentComponent } from './components/report-accident/report-accident.component';
 @NgModule({
   declarations: [
     AppComponent,
@@ -47,6 +48,7 @@ import { CitizenDashboardComponent } from './components/citizen-dashboard/citize
     TopbarComponent,
     HomeComponent,
     CitizenDashboardComponent,
+    ReportAccidentComponent,
   ],
   imports: [
     BrowserModule,

@@ -23,8 +23,8 @@
     </mat-form-field><br>
     <mat-form-field>
       <mat-label>How do you wish to login?</mat-label>
-      <mat-select matInput formControlName="authRequested">
-        <mat-option>None</mat-option>
+      <mat-select formControlName="authRequested">
+        <!-- <mat-option>None</mat-option> -->
         <mat-option [value]="AuthLevels.USER_CITIZEN">Citizen</mat-option>
         <mat-option [value]="AuthLevels.USER_POLICE">Police</mat-option>
         <mat-option [value]="AuthLevels.USER_RTO">RTO</mat-option>

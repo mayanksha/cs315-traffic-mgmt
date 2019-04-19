@@ -1,0 +1,24 @@
+#mat-card-box {
+    text-align: center;
+    max-width: 30% !important;
+    margin: auto;
+    min-height: 30% ;
+}
+
+/deep/ body {
+    margin-top: 100px !important;
+    background-image: url("https://images.medicaldaily.com/sites/medicaldaily.com/files/styles/headline/public/2015/05/26/traffic.jpg");
+    background-repeat: no-repeat;
+    background-size: cover;
+}
+
+.fix-width {
+    width: 100px;
+}
+
+.full-width {
+    width: 100% !important;
+}
+/deep/ .mat-form-field {
+	width : 100% !important;
+}

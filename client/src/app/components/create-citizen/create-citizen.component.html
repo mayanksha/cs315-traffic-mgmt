@@ -1,7 +1,5 @@
-<p>
-  create-citizen works!
-</p>
-<mat-card>
+<app-topbar></app-topbar>
+<mat-card fxLayout="column" fxLayoutAlign="space-evenly stretch" *ngIf="!success" id="mat-card-box">
 
   <form [formGroup]="form">
 
@@ -13,24 +11,24 @@
       -assert(typeof req.body.coordinates !== "undefined");-->
 
       <mat-form-field>
-        <input matInput placeholder="Name" formControlName="Name">
+        <input matInput placeholder="Name" formControlName="Name" class="full-width">
       </mat-form-field><br>
       <mat-form-field>
-        <input matInput placeholder="Address" formControlName="Address">
+        <input matInput placeholder="Address" formControlName="Address" class="full-width">
       </mat-form-field><br>
       <mat-form-field>
-        <input matInput placeholder="Ph. Number" formControlName="PhoneNumber">
+        <input matInput placeholder="Ph. Number" formControlName="PhoneNumber" class="full-width">
       </mat-form-field><br>
       <mat-form-field>
-        <input matInput placeholder="Email" formControlName="Email">
+        <input matInput placeholder="Email" formControlName="Email" class="full-width">
       </mat-form-field><br>
       <mat-form-field>
-        <input matInput placeholder="Vehicle No." formControlName="VehicleNo">
+        <input matInput placeholder="Vehicle No." formControlName="VehicleNo" class="full-width">
       </mat-form-field><br>
       <mat-form-field>
-        <mat-select formControlName="LTypes" placeholder="License Type">
-          <mat-option *ngFor="let Ltype of Ltypes" [value]="Ltype.value">
-            {{Ltype.viewValue}}
+        <mat-select formControlName="licenseType" placeholder="License Type" class="full-width">
+          <mat-option *ngFor="let a of Ltypes" [value]="a.value">
+            {{a.viewValue}}
           </mat-option>
         </mat-select>
       </mat-form-field>

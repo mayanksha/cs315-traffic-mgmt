@@ -7,6 +7,7 @@ import { CreateCitizenComponent } from './components/create-citizen/create-citiz
 import { MapsComponent } from './components/maps/maps.component';
 import { HomeComponent } from './components/home/home.component';
 import { CitizenDashboardComponent } from './components/citizen-dashboard/citizen-dashboard.component';
+import { ReportAccidentComponent } from './components/report-accident/report-accident.component';
 
 const routes: Routes = [
   { path: '', component: HomeComponent },
@@ -15,6 +16,7 @@ const routes: Routes = [
   { path: 'createChallan', component: CreateChallanComponent },
   { path: 'createCitizen', component: CreateCitizenComponent },
   { path: 'citizenDashboard', component: CitizenDashboardComponent },
+  { path: 'reportAccident', component: ReportAccidentComponent },
   { path: 'maps', component: MapsComponent },
 ];
 

@@ -66,8 +66,7 @@ export class CreateCitizenComponent implements OnInit {
       PhoneNumber : ['',[Validators.required]],
       Email : ['',[Validators.required, Validators.email]],
       VehicleNo : ['', [Validators.required]],
-      LicenseType : ['',Validators.required], //TODO:Implement Selector
-      Ltype : [this.Ltypes[0].value, Validators.required]
+      licenseType : ['', Validators.required]
     });
 
   }
