@@ -1,0 +1,10 @@
+<mat-toolbar class="topbar" fxLayout="row">
+	<span fxFlexOffset="10px" fxFlex="0 0 80px">Traffic Management System</span>
+	<span fxFlex></span>
+	<a *ngIf="!logOutPressed" (click)="logOut()">
+		<button mat-icon-button>
+		</button>
+	</a>
+	<!--<mat-progress-spinner [diameter]="40" *ngIf="logOutPressed" color="primary" mode="indeterminate" value="50">
+		 -</mat-progress-spinner>-->
+</mat-toolbar>

@@ -1,8 +1,8 @@
 #mat-card-box {
     text-align: center;
-    max-width: 30% !important;
+    max-width: 20%;
     margin: auto;
-    min-height: 30% ;
+    height: 200px;
 }
 
 /deep/ body {
@@ -11,14 +11,6 @@
     background-repeat: no-repeat;
     background-size: cover;
 }
-
 .fix-width {
     width: 100px;
-}
-
-.full-width {
-    width: 100% !important;
-}
-/deep/ .mat-form-field {
-	width : 100% !important;
 }

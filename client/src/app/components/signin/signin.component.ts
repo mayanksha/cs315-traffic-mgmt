@@ -41,6 +41,12 @@ export class MyErrorStateMatcher implements ErrorStateMatcher {
   styleUrls: ['./signin.component.css']
 })
 export class SignInComponent implements OnInit {
+  AuthLevels = {
+    USER_RTO : 1 << 1,
+    USER_POLICE : 1 << 2,
+    USER_CITIZEN : 1 << 3,
+  }
+
   form: FormGroup;
   status = loginStatus.NOT_TRIED;
   spinnerStatus = 0;
@@ -57,13 +63,14 @@ export class SignInComponent implements OnInit {
         Validators.email
       ]],
       password : ['', [ Validators.required ]],
+      authRequested: ['', [ Validators. required ]]
     });
 
-    setTimeout((): void => {
-      this.form.value.email = "msharma@iitk.ac.in";
-      this.form.value.password = "lskdjfl";
-      this.onSubmit();
-    }, 1000);
+    /*setTimeout((): void => {
+     *  this.form.controls['email'].setValue("foobar@iitk.ac.in");
+     *  this.form.controls['password'].setValue("foobar");
+     *  this.onSubmit();
+     *}, 1000);*/
   }
 
   onSubmit() {

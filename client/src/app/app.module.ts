@@ -33,6 +33,9 @@ import { SignUpComponent } from './components/signup/signup.component';
 import { CreateChallanComponent } from './components/create-challan/create-challan.component';
 import { CreateCitizenComponent } from './components/create-citizen/create-citizen.component';
 import { MapsComponent } from './components/maps/maps.component';
+import { TopbarComponent } from './components/topbar/topbar.component';
+import { HomeComponent } from './components/home/home.component';
+import { CitizenDashboardComponent } from './components/citizen-dashboard/citizen-dashboard.component';
 @NgModule({
   declarations: [
     AppComponent,
@@ -41,6 +44,9 @@ import { MapsComponent } from './components/maps/maps.component';
     CreateChallanComponent,
     CreateCitizenComponent,
     MapsComponent,
+    TopbarComponent,
+    HomeComponent,
+    CitizenDashboardComponent,
   ],
   imports: [
     BrowserModule,

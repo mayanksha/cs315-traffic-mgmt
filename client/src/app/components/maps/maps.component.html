@@ -1,6 +1,19 @@
-<p>
-  maps works!
-</p>
-
 <!--<input id="pac-input" class="controls" type="text" placeholder="Search Box">-->
-<div #map id="map">MAP HERE</div>
+<mat-card fxLayout="row" fxLayoutAlign="space-around center">
+  <button mat-raised-button color="primary" (click)="toggleTrafficLights()">
+    {{ trafficLights.clicked ? "Remove" : "Show" }} Traffic Lights
+  </button>
+
+  <button mat-raised-button color="primary" (click)="togglePoliceOfficers()">
+    {{ policeOfficers.clicked ? "Remove" : "Show" }} Police Officers 
+  </button>
+
+  <button mat-raised-button color="primary" (click)="toggleAccidents()">
+    {{ accidents.clicked ? "Remove" : "Show" }} Accidents 
+  </button>
+</mat-card>
+<br>
+<mat-card>
+  <div #map id="map">MAP HERE</div>
+</mat-card>
+
