@@ -194,7 +194,7 @@ function createChallanHandler(req: Request, res: Response, next: NextFunction): 
   assert(typeof req.body.vehicleNo !== "undefined");
   assert(typeof req.body.policeOfficer !== "undefined");
   assert(typeof req.body.dueDate !== "undefined");
-  assert(typeof req.body.coordinates !== "undefined");
+  /*assert(typeof req.body.coordinates !== "undefined");*/
   assert(typeof req.body.offence !== "undefined");
   /*assert(
    *  typeof req.body.coordinates !== "undefined" &&
@@ -244,8 +244,10 @@ function createChallanHandler(req: Request, res: Response, next: NextFunction): 
       newChallan.dueDate = req.body.dueDate;
       newChallan.offence = req.body.offence;
       newChallan.paymentStatus = false;
-      newChallan.coordinates.latitude = req.body.coordinates.latitude;
-      newChallan.coordinates.longitude = req.body.coordinates.longitude;
+      newChallan.coordinates.latitude = req.body.latitude;
+      newChallan.coordinates.longitude = req.body.longitude;
+      /*newChallan.coordinates.latitude = req.body.coordinates.latitude;
+       *newChallan.coordinates.longitude = req.body.coordinates.longitude;*/
       return newChallan.save();
     }
     else return Promise.reject(new Error("Citizen Not Found in DB!"));

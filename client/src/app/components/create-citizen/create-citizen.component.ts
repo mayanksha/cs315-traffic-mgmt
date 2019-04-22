@@ -33,6 +33,7 @@ export class CreateCitizenComponent implements OnInit {
   form: FormGroup;
   spinnerStatus = 0;
   postEndpoint = 'http://localhost:8000/';
+  singleChallans: any;
   Ltypes: LicenseType[] = [
     {value: 'MC_50CC' , viewValue:'Motorcycle 50cc'},
     {value: 'MC_EX50CC', viewValue:'Motorcycle more than 50cc'},

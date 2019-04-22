@@ -45,7 +45,7 @@ export class CreateChallanComponent implements OnInit {
       vehicleNo : ['', [Validators.required]],
       dueDate : ['', [Validators.required]],
       policeOfficer : ['', [Validators.required]],
-      password : ['', [ Validators.required ]],
+      offence : ['', [ Validators.required ]],
       latitude : [{value: '', disabled : true}, [ Validators.required ]],
       longitude : [{value: '', disabled : true}, [ Validators.required ]],
     });

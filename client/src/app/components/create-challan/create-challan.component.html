@@ -24,6 +24,10 @@
       </mat-form-field><br>
 
       <mat-form-field>
+        <input matInput placeholder="Offence Description" formControlName="offence" class="full-width">
+      </mat-form-field><br>
+
+      <mat-form-field>
         <input matInput [matDatepicker]="picker" placeholder="Choose a date" formControlName="dueDate" class="full-width">
         <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
         <mat-datepicker #picker></mat-datepicker>
